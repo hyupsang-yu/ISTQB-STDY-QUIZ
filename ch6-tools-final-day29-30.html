@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>6장 - 테스트 도구 & 최종 복습</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f1f5f9; font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; }
+    .wrap { max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: 60px; }
+    .header { background: linear-gradient(135deg, #8b5cf6, #7c3aed); padding: 20px 16px 16px; position: sticky; top: 0; z-index: 10; }
+    .back-btn { background: none; border: none; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; opacity: 0.85; padding: 0; margin-bottom: 8px; display: block; }
+    .header-badge { font-size: 11px; font-weight: 700; background: rgba(255,255,255,0.2); color: #fff; padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 6px; }
+    .header-title { font-size: 20px; font-weight: 900; color: #fff; }
+    .header-sub { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+    .day-nav { display: flex; gap: 6px; padding: 12px 12px 0; overflow-x: auto; }
+    .day-nav::-webkit-scrollbar { display: none; }
+    .day-btn { flex-shrink: 0; padding: 6px 14px; border-radius: 20px; border: 1.5px solid #e2e8f0; background: #fff; font-size: 12px; font-weight: 700; color: #94a3b8; cursor: pointer; }
+    .day-btn.active { background: #8b5cf6; border-color: #8b5cf6; color: #fff; }
+    .day-btn.done { border-color: #8b5cf6; color: #8b5cf6; }
+    .content { padding: 12px; }
+    .day-section { display: none; }
+    .day-section.show { display: block; }
+    .day-header { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 10px; border-left: 4px solid #8b5cf6; }
+    .day-num { font-size: 11px; font-weight: 700; color: #8b5cf6; margin-bottom: 4px; }
+    .day-title { font-size: 18px; font-weight: 800; color: #0f172a; }
+    .card { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 10px; }
+    .card-title { font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 12px; }
+    .section { margin-bottom: 16px; }
+    .section:last-child { margin-bottom: 0; }
+    .section-name { font-size: 12px; font-weight: 800; color: #8b5cf6; margin-bottom: 8px; padding: 3px 0; border-bottom: 2px solid #8b5cf618; }
+    .desc { font-size: 13px; color: #334155; line-height: 1.8; }
+    .desc b { color: #0f172a; font-weight: 700; }
+    .point-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .point-list li { font-size: 13px; color: #334155; line-height: 1.7; padding-left: 16px; position: relative; }
+    .point-list li::before { content: '•'; position: absolute; left: 0; color: #8b5cf6; font-weight: 700; }
+    .point-list li b { color: #0f172a; font-weight: 700; }
+    .compare-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .compare-table th { background: #8b5cf618; color: #8b5cf6; font-weight: 700; padding: 8px; text-align: center; }
+    .compare-table td { padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: left; color: #334155; vertical-align: top; font-size: 12px; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .tip-box { background: #fefce8; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px; margin-top: 8px; }
+    .tip-label { font-size: 11px; font-weight: 800; color: #92400e; margin-bottom: 4px; }
+    .tip-text { font-size: 12px; color: #78350f; line-height: 1.7; }
+    .warn-box { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 10px; padding: 12px 14px; margin-top: 8px; }
+    .warn-label { font-size: 11px; font-weight: 800; color: #991b1b; margin-bottom: 4px; }
+    .warn-text { font-size: 12px; color: #7f1d1d; line-height: 1.7; }
+    .number-list { display: flex; flex-direction: column; gap: 8px; }
+    .number-item { display: flex; gap: 10px; align-items: flex-start; }
+    .number-circle { width: 24px; height: 24px; border-radius: 50%; background: #8b5cf6; color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .number-text { font-size: 13px; color: #334155; line-height: 1.7; }
+    .number-text b { color: #0f172a; font-weight: 700; }
+    .complete-btn { width: 100%; background: #8b5cf6; color: #fff; border: none; border-radius: 14px; padding: 15px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; }
+    .complete-btn.done { background: #10b981; }
+    .quiz-link { width: 100%; background: #0f172a; color: #fff; border: none; border-radius: 14px; padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; text-decoration: none; display: block; text-align: center; }
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .summary-card { background: #f8fafc; border-radius: 12px; padding: 12px; }
+    .summary-num { font-size: 24px; font-weight: 900; color: #8b5cf6; line-height: 1; }
+    .summary-label { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .summary-items { font-size: 11px; color: #334155; margin-top: 6px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <button class="back-btn" onclick="location.href='index.html'">← 메인으로</button>
+    <span class="header-badge">6장 · Day 29–30</span>
+    <div class="header-title">테스트 도구 &amp; 최종 복습</div>
+    <div class="header-sub">자동화 도구, 전 범위 최종 정리</div>
+  </div>
+
+  <div class="day-nav" id="dayNav"></div>
+  <div class="content">
+
+    <!-- DAY 29 -->
+    <div class="day-section show" id="day29">
+      <div class="day-header"><div class="day-num">DAY 29</div><div class="day-title">테스트 도구와 자동화</div></div>
+
+      <div class="card">
+        <div class="card-title">🛠️ 테스트 도구 유형 9가지</div>
+        <table class="compare-table">
+          <tr><th>유형</th><th>예시/설명</th></tr>
+          <tr><td><b>테스트 관리</b></td><td>테스트 케이스, 결함 추적</td></tr>
+          <tr><td><b>정적 테스팅</b></td><td>정적 분석, 코드 리뷰 도구</td></tr>
+          <tr><td><b>테스트 설계·구현</b></td><td>테스트 케이스 생성 도구</td></tr>
+          <tr><td><b>테스트 실행·커버리지</b></td><td>자동화 테스트 실행, 커버리지 측정</td></tr>
+          <tr><td><b>비기능 테스팅</b></td><td>성능, 부하, 보안 테스트 도구</td></tr>
+          <tr><td><b>DevOps</b></td><td>CI/CD 파이프라인, 빌드 도구</td></tr>
+          <tr><td><b>협업</b></td><td>이슈 트래커, 채팅 도구</td></tr>
+          <tr><td><b>확장성·이식성</b></td><td>가상화, 컨테이너 도구</td></tr>
+          <tr><td><b>기타</b></td><td>탐색적 테스팅 지원 등</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">✅ 테스트 자동화의 6가지 효과</div>
+        <ul class="point-list">
+          <li>반복적 수작업 줄여 <b>시간 절약</b></li>
+          <li>수동 테스팅보다 <b>일관성 있고 재현 가능</b></li>
+          <li>결과에 대한 <b>객관적 평가</b> 제공</li>
+          <li>도구가 수집한 정보에 <b>더 쉽게 접근</b></li>
+          <li>수동 테스팅보다 <b>실행 시간 단축</b></li>
+          <li>테스터가 <b>더 창의적인 테스트 설계에 집중</b> 가능</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚠️ 테스트 자동화의 7가지 리스크</div>
+        <ul class="point-list">
+          <li>도구 효과에 대한 <b>비현실적인 기대</b></li>
+          <li>도구 도입에 드는 <b>시간, 비용, 노력 과소평가</b></li>
+          <li>테스트 자동화를 달성하기 어려울 정도로 <b>노력이 과소평가</b></li>
+          <li>도구에 지나치게 의존하여 <b>비판적 사고 무시</b></li>
+          <li><b>수동이 더 적합한 곳</b>에 자동화 적용</li>
+          <li>오픈소스 소프트웨어의 <b>지원 중단</b> 가능성</li>
+          <li>호환성 문제 등 <b>기술적 어려움</b></li>
+        </ul>
+        <div class="warn-box">
+          <div class="warn-label">⚠️ 핵심 오해</div>
+          <div class="warn-text">도구를 도입한다고 자동으로 성공이 보장되지 않습니다. 도입, 유지보수, 교육에 추가 노력이 필요합니다.</div>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-day29" onclick="markDone(29)">✅ 학습 완료</button>
+      <a href="quiz.html?day=29" class="quiz-link">📝 Day 29 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 30 -->
+    <div class="day-section" id="day30">
+      <div class="day-header"><div class="day-num">DAY 30</div><div class="day-title">최종 복습 &amp; 시험 대비</div></div>
+
+      <div class="card">
+        <div class="card-title">🔢 꼭 외워야 할 숫자들</div>
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="summary-num">7</div>
+            <div class="summary-label">테스팅 원리</div>
+            <div class="summary-items">결함존재증명, 완벽불가, 조기테스팅, 결함집중, 살충제패러독스, 정황의존, 결함부재궤변</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-num">5</div>
+            <div class="summary-label">테스트 레벨</div>
+            <div class="summary-items">컴포넌트, 컴포넌트통합, 시스템, 시스템통합, 인수</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-num">4</div>
+            <div class="summary-label">테스트 유형</div>
+            <div class="summary-items">기능, 비기능, 블랙박스, 화이트박스</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-num">4</div>
+            <div class="summary-label">리뷰 유형</div>
+            <div class="summary-items">비공식, 워크쓰루, 기술리뷰, 인스펙션</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-num">4</div>
+            <div class="summary-label">추정 기법</div>
+            <div class="summary-items">비율기반, 외삽법, 와이드밴드델파이, 3점추정</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-num">4</div>
+            <div class="summary-label">테스팅 사분면</div>
+            <div class="summary-items">Q1(기술/팀), Q2(비즈/팀), Q3(비즈/평가), Q4(기술/평가)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎯 자주 출제되는 비교 문제</div>
+        <div class="section">
+          <div class="section-name">테스팅 vs 디버깅</div>
+          <div class="desc">테스팅 = 결함 식별 / 디버깅 = 결함 원인 제거</div>
+        </div>
+        <div class="section">
+          <div class="section-name">확인 테스팅 vs 리그레션 테스팅</div>
+          <div class="desc">확인 = 수정 확인 / 리그레션 = 부작용 확인</div>
+        </div>
+        <div class="section">
+          <div class="section-name">베리피케이션 vs 밸리데이션</div>
+          <div class="desc">베리피케이션 = "제대로 만들었나?" / 밸리데이션 = "제대로 된 걸 만들었나?"</div>
+        </div>
+        <div class="section">
+          <div class="section-name">분기 커버리지 vs 구문 커버리지</div>
+          <div class="desc">분기 100% → 구문 100% 보장 O / 구문 100% → 분기 100% 보장 X</div>
+        </div>
+        <div class="section">
+          <div class="section-name">2값 BVA vs 3값 BVA</div>
+          <div class="desc">3값이 더 엄격 / 3값 = 경계값 + 양쪽 이웃값</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🚨 자주 틀리는 함정 문제</div>
+        <div class="warn-box">
+          <div class="warn-label">❌ 이것들은 모두 틀린 내용!</div>
+          <div class="warn-text">
+            • 테스팅 = 소프트웨어 실행만 → <b>틀림</b><br>
+            • 테스팅으로 결함 없음 증명 가능 → <b>틀림</b><br>
+            • 결함 있으면 반드시 장애 발생 → <b>틀림</b><br>
+            • 시프트 레프트 = 후반 테스트 불필요 → <b>틀림</b><br>
+            • DevOps = 수동 테스팅 완전 제거 → <b>틀림</b><br>
+            • 도구 도입 = 자동으로 성공 보장 → <b>틀림</b><br>
+            • 인스펙션에서 저자가 리더/서기 가능 → <b>틀림</b><br>
+            • 구문 100% = 분기 100% 보장 → <b>틀림</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📝 3점 추정 공식 최종 정리</div>
+        <div style="background:#6366f118;border-radius:12px;padding:16px;text-align:center">
+          <div style="font-size:18px;font-weight:900;color:#6366f1">E = (a + 4m + b) / 6</div>
+          <div style="font-size:14px;color:#4338ca;margin-top:6px">SD = (b - a) / 6</div>
+          <div style="font-size:12px;color:#64748b;margin-top:8px">a=낙관 / m=확률 / b=비관</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🏆 시험 전략</div>
+        <ul class="point-list">
+          <li>K1 문제: <b>기억/암기</b> — 정의, 용어를 정확히 외우기</li>
+          <li>K2 문제: <b>이해</b> — 개념의 차이점, 예시 이해하기</li>
+          <li>K3 문제: <b>적용</b> — 상황에 맞는 기법/접근법 선택</li>
+          <li>오답을 고르라는 문제 → <b>"옳지 않은 것은?"</b> 주의!</li>
+          <li>"가장 적절한 것은?" → 정답이 여러 개처럼 보여도 <b>가장 좋은 것</b> 선택</li>
+        </ul>
+        <div class="tip-box" style="margin-top:10px">
+          <div class="tip-label">💪 파이팅!</div>
+          <div class="tip-text">30일 동안 공부한 내용을 믿으세요! 특히 7원리, 5레벨, 4기법, 4리뷰 유형을 마지막으로 확인하고 시험장에 가세요!</div>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-day30" onclick="markDone(30)">🎉 30일 완주!</button>
+      <a href="quiz.html?day=30" class="quiz-link">📝 최종 퀴즈 풀기</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const DAYS = [29,30];
+  const progress = JSON.parse(localStorage.getItem('istqb_progress') || '{}');
+  const nav = document.getElementById('dayNav');
+  DAYS.forEach(d => {
+    const btn = document.createElement('button');
+    btn.className = 'day-btn' + (d === 29 ? ' active' : '') + (progress[d]?.studied ? ' done' : '');
+    btn.textContent = `Day ${d}`;
+    btn.onclick = () => switchDay(d);
+    btn.id = `nav-day${d}`;
+    nav.appendChild(btn);
+  });
+  function switchDay(d) {
+    DAYS.forEach(i => { document.getElementById(`day${i}`).classList.remove('show'); document.getElementById(`nav-day${i}`).classList.remove('active'); });
+    document.getElementById(`day${d}`).classList.add('show');
+    document.getElementById(`nav-day${d}`).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  function markDone(d) {
+    const p = JSON.parse(localStorage.getItem('istqb_progress') || '{}');
+    p[d] = { ...(p[d] || {}), studied: true };
+    localStorage.setItem('istqb_progress', JSON.stringify(p));
+    const btn = document.getElementById(`btn-day${d}`);
+    btn.textContent = d === 30 ? '🎉 완주!' : '✅ 완료됨!';
+    btn.classList.add('done');
+    document.getElementById(`nav-day${d}`)?.classList.add('done');
+    if (d < 30) setTimeout(() => switchDay(d + 1), 600);
+  }
+  DAYS.forEach(d => { if (progress[d]?.studied) { const btn = document.getElementById(`btn-day${d}`); if (btn) { btn.textContent = d === 30 ? '🎉 완주!' : '✅ 완료됨!'; btn.classList.add('done'); } } });
+  const params = new URLSearchParams(location.search);
+  const startDay = parseInt(params.get('day'));
+  if (startDay && DAYS.includes(startDay)) switchDay(startDay);
+</script>
+</body>
+</html>

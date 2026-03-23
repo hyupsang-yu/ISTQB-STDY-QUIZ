@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2장 - 소프트웨어 개발수명주기</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f1f5f9; font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; }
+    .wrap { max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: 60px; }
+    .header { background: linear-gradient(135deg, #0ea5e9, #0284c7); padding: 20px 16px 16px; position: sticky; top: 0; z-index: 10; }
+    .back-btn { background: none; border: none; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; opacity: 0.85; padding: 0; margin-bottom: 8px; display: block; }
+    .header-badge { font-size: 11px; font-weight: 700; background: rgba(255,255,255,0.2); color: #fff; padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 6px; }
+    .header-title { font-size: 20px; font-weight: 900; color: #fff; }
+    .header-sub { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+    .day-nav { display: flex; gap: 6px; padding: 12px 12px 0; overflow-x: auto; }
+    .day-nav::-webkit-scrollbar { display: none; }
+    .day-btn { flex-shrink: 0; padding: 6px 14px; border-radius: 20px; border: 1.5px solid #e2e8f0; background: #fff; font-size: 12px; font-weight: 700; color: #94a3b8; cursor: pointer; }
+    .day-btn.active { background: #0ea5e9; border-color: #0ea5e9; color: #fff; }
+    .day-btn.done { border-color: #0ea5e9; color: #0ea5e9; }
+    .content { padding: 12px; }
+    .day-section { display: none; }
+    .day-section.show { display: block; }
+    .day-header { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 10px; border-left: 4px solid #0ea5e9; }
+    .day-num { font-size: 11px; font-weight: 700; color: #0ea5e9; margin-bottom: 4px; }
+    .day-title { font-size: 18px; font-weight: 800; color: #0f172a; }
+    .card { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 10px; }
+    .card-title { font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 12px; }
+    .section { margin-bottom: 16px; }
+    .section:last-child { margin-bottom: 0; }
+    .section-name { font-size: 12px; font-weight: 800; color: #0ea5e9; margin-bottom: 8px; padding: 3px 0; border-bottom: 2px solid #0ea5e918; }
+    .desc { font-size: 13px; color: #334155; line-height: 1.8; }
+    .desc b { color: #0f172a; font-weight: 700; }
+    .point-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .point-list li { font-size: 13px; color: #334155; line-height: 1.7; padding-left: 16px; position: relative; }
+    .point-list li::before { content: '•'; position: absolute; left: 0; color: #0ea5e9; font-weight: 700; }
+    .point-list li b { color: #0f172a; font-weight: 700; }
+    .compare-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 4px; }
+    .compare-table th { background: #0ea5e918; color: #0ea5e9; font-weight: 700; padding: 8px; text-align: center; }
+    .compare-table td { padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: center; color: #334155; vertical-align: top; font-size: 12px; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .tip-box { background: #fefce8; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px; margin-top: 8px; }
+    .tip-label { font-size: 11px; font-weight: 800; color: #92400e; margin-bottom: 4px; }
+    .tip-text { font-size: 12px; color: #78350f; line-height: 1.7; }
+    .number-list { display: flex; flex-direction: column; gap: 8px; }
+    .number-item { display: flex; gap: 10px; align-items: flex-start; }
+    .number-circle { width: 24px; height: 24px; border-radius: 50%; background: #0ea5e9; color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .number-text { font-size: 13px; color: #334155; line-height: 1.7; }
+    .number-text b { color: #0f172a; font-weight: 700; }
+    .flow-box { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .flow-item { background: #0ea5e918; color: #0ea5e9; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 8px; }
+    .flow-arrow { color: #94a3b8; font-size: 12px; }
+    .warn-box { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 10px; padding: 12px 14px; margin-top: 8px; }
+    .warn-label { font-size: 11px; font-weight: 800; color: #991b1b; margin-bottom: 4px; }
+    .warn-text { font-size: 12px; color: #7f1d1d; line-height: 1.7; }
+    .complete-btn { width: 100%; background: #0ea5e9; color: #fff; border: none; border-radius: 14px; padding: 15px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; }
+    .complete-btn.done { background: #10b981; }
+    .quiz-link { width: 100%; background: #0f172a; color: #fff; border: none; border-radius: 14px; padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; text-decoration: none; display: block; text-align: center; }
+    .keyword-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .keyword-card { background: #f8fafc; border-radius: 10px; padding: 10px 12px; border-left: 3px solid #0ea5e9; }
+    .keyword-term { font-size: 12px; font-weight: 800; color: #0ea5e9; margin-bottom: 3px; }
+    .keyword-def { font-size: 11px; color: #475569; line-height: 1.5; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <button class="back-btn" onclick="location.href='index.html'">← 메인으로</button>
+    <span class="header-badge">2장 · Day 8–14</span>
+    <div class="header-title">소프트웨어 개발수명주기</div>
+    <div class="header-sub">SDLC, 테스트 레벨, TDD/BDD, DevOps</div>
+  </div>
+
+  <div class="day-nav" id="dayNav"></div>
+  <div class="content">
+
+    <!-- DAY 8 -->
+    <div class="day-section show" id="day8">
+      <div class="day-header"><div class="day-num">DAY 8</div><div class="day-title">SDLC와 테스팅 관계</div></div>
+
+      <div class="card">
+        <div class="card-title">📐 순차적 개발 모델</div>
+        <div class="section">
+          <div class="section-name">폭포수 모델 (Waterfall)</div>
+          <ul class="point-list">
+            <li>각 단계가 <b>순서대로 진행</b>, 이전 단계로 돌아가기 어려움</li>
+            <li>테스팅은 <b>개발 완료 후</b>에 수행 → 늦은 결함 발견 → 높은 수정 비용</li>
+          </ul>
+        </div>
+        <div class="section">
+          <div class="section-name">V-모델 (검증 및 확인 모델)</div>
+          <ul class="point-list">
+            <li>각 개발 단계에 <b>대응하는 테스트 레벨</b>이 존재</li>
+            <li>테스터는 <b>초기 단계부터</b> 요구사항 리뷰, 테스트 분석·설계에 참여</li>
+            <li>동적 테스팅은 여전히 나중에 수행되지만, <b>정적 테스팅은 초기부터</b> 수행</li>
+          </ul>
+        </div>
+        <div class="tip-box">
+          <div class="tip-label">💡 V-모델 대응 관계</div>
+          <div class="tip-text">요구사항 ↔ 인수 테스팅<br>시스템 설계 ↔ 시스템 테스팅<br>아키텍처 설계 ↔ 통합 테스팅<br>상세 설계 ↔ 컴포넌트 테스팅</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔄 반복적·점진적 개발 모델</div>
+        <div class="section">
+          <ul class="point-list">
+            <li><b>스크럼, 칸반, 애자일</b> 등이 대표적</li>
+            <li>각 반복 주기(스프린트)마다 <b>모든 테스트 레벨 수행 가능</b></li>
+            <li>가벼운 산출물, <b>테스트 자동화</b> 선호</li>
+            <li>리그레션 테스팅이 매우 중요해짐</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚙️ SDLC가 테스팅에 미치는 영향</div>
+        <ul class="point-list">
+          <li>테스트 활동의 <b>범위와 시기</b></li>
+          <li>테스트 문서의 <b>상세화 수준</b></li>
+          <li><b>테스트 기법과 접근법</b> 선택</li>
+          <li>테스트 <b>자동화 범위</b></li>
+          <li>테스터의 <b>역할과 책임</b></li>
+        </ul>
+        <div class="tip-box" style="margin-top:10px">
+          <div class="tip-label">💡 핵심 원칙</div>
+          <div class="tip-text">어떤 SDLC를 사용하든, <b>모든 개발 활동에 상응하는 테스트 활동</b>이 존재해야 합니다.</div>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-day8" onclick="markDone(8)">✅ 학습 완료</button>
+      <a href="quiz.html?day=8" class="quiz-link">📝 Day 8 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 9 -->
+    <div class="day-section" id="day9">
+      <div class="day-header"><div class="day-num">DAY 9</div><div class="day-title">TDD / ATDD / BDD</div></div>
+
+      <div class="card">
+        <div class="card-title">🔴 TDD (테스트 주도 개발)</div>
+        <div class="flow-box">
+          <span class="flow-item">① 테스트 먼저 작성</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item">② 실패 확인</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item">③ 코드 작성</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item">④ 테스트 통과</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item">⑤ 리팩토링</span>
+        </div>
+        <ul class="point-list" style="margin-top:10px">
+          <li>코드 작성 <b>전에</b> 테스트를 먼저 작성</li>
+          <li><b>리팩토링</b>: 기능 변경 없이 코드 구조를 개선하는 것</li>
+          <li>주로 <b>컴포넌트(단위) 테스팅</b> 수준에서 사용</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🟢 ATDD (인수 테스트 주도 개발)</div>
+        <div class="flow-box">
+          <span class="flow-item">① 명세 워크숍</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item">② 인수 조건 정의</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item">③ 테스트 작성</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item">④ 구현</span>
+        </div>
+        <ul class="point-list" style="margin-top:10px">
+          <li><b>인수 조건</b>에서 테스트를 도출</li>
+          <li>시스템 설계 프로세스 중에 테스트를 작성</li>
+          <li>비즈니스 관점에서 테스트를 정의</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔵 BDD (행위 주도 개발)</div>
+        <div class="section">
+          <div class="section-name">Given / When / Then 형식</div>
+          <div style="background:#f0f9ff;border-radius:10px;padding:12px;font-size:13px;color:#0369a1;line-height:1.8;font-family:monospace">
+            <b>Given</b> 사용자가 로그인된 상태에서<br>
+            <b>When</b> 장바구니에 상품을 추가하면<br>
+            <b>Then</b> 장바구니 수량이 1 증가해야 한다
+          </div>
+        </div>
+        <ul class="point-list" style="margin-top:10px">
+          <li>이해관계자가 이해할 수 있는 <b>자연어</b>로 작성</li>
+          <li>개발자, 테스터, 비즈니스 담당자 간 <b>공통 이해</b> 촉진</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📊 TDD / ATDD / BDD 공통점</div>
+        <ul class="point-list">
+          <li>모두 <b>코드 작성 전에</b> 테스트를 정의 → <b>조기 테스팅 원리</b> 적용</li>
+          <li>모두 <b>시프트 레프트</b>를 따름</li>
+          <li>작성된 테스트는 <b>자동화 테스트</b>로 유지·활용 가능</li>
+        </ul>
+      </div>
+
+      <button class="complete-btn" id="btn-day9" onclick="markDone(9)">✅ 학습 완료</button>
+      <a href="quiz.html?day=9" class="quiz-link">📝 Day 9 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 10 -->
+    <div class="day-section" id="day10">
+      <div class="day-header"><div class="day-num">DAY 10</div><div class="day-title">DevOps와 시프트 레프트</div></div>
+
+      <div class="card">
+        <div class="card-title">⬅️ 시프트 레프트 (Shift Left)</div>
+        <div class="desc"><b>테스트를 SDLC의 더 초기에 수행</b>하는 접근법입니다. 왼쪽으로 이동한다는 뜻으로, 타임라인상 앞당긴다는 의미입니다.</div>
+        <div class="section" style="margin-top:12px">
+          <div class="section-name">시프트 레프트 프랙티스</div>
+          <ul class="point-list">
+            <li>테스터 관점에서 <b>명세를 리뷰</b>한다</li>
+            <li>코드 작성 <b>전에</b> 테스트 케이스를 작성 (TDD)</li>
+            <li>CI/CD에서 <b>정적 분석 도구</b>를 사용</li>
+            <li>가능한 한 <b>컴포넌트 테스팅</b>에서 비기능 테스팅을 수행</li>
+          </ul>
+        </div>
+        <div class="warn-box">
+          <div class="warn-label">⚠️ 주의</div>
+          <div class="warn-text">시프트 레프트는 후반부 테스트를 <b>무시해도 된다</b>는 뜻이 아닙니다. 더 일찍 시작하는 것일 뿐, 후반 테스트도 여전히 필요합니다.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🚀 DevOps와 테스팅</div>
+        <div class="section">
+          <div class="section-name">DevOps의 테스팅 이점</div>
+          <ul class="point-list">
+            <li>코드 품질에 대한 <b>빠른 피드백</b> 제공</li>
+            <li><b>자동 리그레션 테스트</b>의 규모와 범위 증가</li>
+            <li>안정적인 <b>테스트 환경</b> 구축 촉진</li>
+            <li><b>CI/CD</b>를 통한 지속적 통합·배포</li>
+          </ul>
+        </div>
+        <div class="section">
+          <div class="section-name">DevOps의 리스크/어려움</div>
+          <ul class="point-list">
+            <li>배포 파이프라인 <b>정의 및 설정 필요</b></li>
+            <li>CI/CD 도구 <b>도입 및 유지보수 비용</b></li>
+            <li>테스트 자동화를 위한 <b>추가 자원 필요</b></li>
+          </ul>
+        </div>
+        <div class="warn-box">
+          <div class="warn-label">⚠️ 흔한 오해</div>
+          <div class="warn-text">DevOps가 수동 테스팅을 <b>완전히 제거</b>하지는 않습니다.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔁 회고 (Retrospective)</div>
+        <div class="desc">반복 주기 종료 시 팀이 모여 수행하는 <b>프로세스 개선 활동</b>입니다.</div>
+        <div class="section" style="margin-top:10px">
+          <ul class="point-list">
+            <li>무엇이 <b>성공적</b>이었는가? (유지할 것)</li>
+            <li>무엇이 <b>부족</b>했는가? (개선할 것)</li>
+            <li>향후 어떻게 <b>개선</b>할 것인가?</li>
+          </ul>
+        </div>
+        <div class="tip-box">
+          <div class="tip-label">💡 테스팅 관점의 이점</div>
+          <div class="tip-text">테스트 효과성/효율성 향상, 테스트웨어 품질 향상, 팀 학습 촉진</div>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-day10" onclick="markDone(10)">✅ 학습 완료</button>
+      <a href="quiz.html?day=10" class="quiz-link">📝 Day 10 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 11 -->
+    <div class="day-section" id="day11">
+      <div class="day-header"><div class="day-num">DAY 11</div><div class="day-title">테스트 레벨</div></div>
+
+      <div class="card">
+        <div class="card-title">🏗️ 5가지 테스트 레벨</div>
+        <div class="number-list">
+          <div class="number-item">
+            <div class="number-circle">1</div>
+            <div class="number-text">
+              <b>컴포넌트 테스팅 (단위 테스팅)</b><br>
+              <span style="font-size:12px;color:#64748b">• 개별 컴포넌트를 독립적으로 테스트<br>• 일반적으로 <b>개발자</b>가 수행<br>• 목적: 컴포넌트 기능·비기능 특성 검증</span>
+            </div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">2</div>
+            <div class="number-text">
+              <b>컴포넌트 통합 테스팅</b><br>
+              <span style="font-size:12px;color:#64748b">• 컴포넌트 간의 <b>인터페이스와 상호작용</b> 테스트<br>• 목적: 인터페이스 결함 발견</span>
+            </div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">3</div>
+            <div class="number-text">
+              <b>시스템 테스팅</b><br>
+              <span style="font-size:12px;color:#64748b">• <b>전체 시스템</b>의 기능·비기능 동작 검증<br>• E2E(엔드투엔드) 테스팅 포함<br>• 독립적인 테스트팀이 수행하는 것이 좋음</span>
+            </div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">4</div>
+            <div class="number-text">
+              <b>시스템 통합 테스팅</b><br>
+              <span style="font-size:12px;color:#64748b">• 다른 <b>시스템·외부 서비스</b>와의 인터페이스 테스트<br>• API, 웹 서비스 등 외부 연동 검증</span>
+            </div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">5</div>
+            <div class="number-text">
+              <b>인수 테스팅</b><br>
+              <span style="font-size:12px;color:#64748b">• 사용자 비즈니스 요구 충족 여부 확인 (<b>밸리데이션</b>)<br>• 유형: UAT, 운영 인수, 계약 인수, 알파/베타 테스팅</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎯 테스트 레벨 구분 속성</div>
+        <div class="keyword-grid">
+          <div class="keyword-card"><div class="keyword-term">테스트 대상</div><div class="keyword-def">무엇을 테스트하나</div></div>
+          <div class="keyword-card"><div class="keyword-term">테스트 목적</div><div class="keyword-def">왜 테스트하나</div></div>
+          <div class="keyword-card"><div class="keyword-term">테스트 베이시스</div><div class="keyword-def">무엇을 근거로</div></div>
+          <div class="keyword-card"><div class="keyword-term">결함과 장애</div><div class="keyword-def">어떤 결함을 찾나</div></div>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-day11" onclick="markDone(11)">✅ 학습 완료</button>
+      <a href="quiz.html?day=11" class="quiz-link">📝 Day 11 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 12 -->
+    <div class="day-section" id="day12">
+      <div class="day-header"><div class="day-num">DAY 12</div><div class="day-title">테스트 유형과 확인/리그레션</div></div>
+
+      <div class="card">
+        <div class="card-title">📋 4가지 테스트 유형</div>
+        <div class="number-list">
+          <div class="number-item">
+            <div class="number-circle">1</div>
+            <div class="number-text"><b>기능 테스팅</b> — <b>"무엇을"</b> 하는가?<br><span style="font-size:12px;color:#64748b">시스템이 기능적 요구사항을 만족하는지 확인. 블랙박스 기법 사용.</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">2</div>
+            <div class="number-text"><b>비기능 테스팅</b> — <b>"얼마나 잘"</b> 하는가?<br><span style="font-size:12px;color:#64748b">성능, 보안, 사용성, 신뢰성 등 ISO 25010 품질 특성 검증</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">3</div>
+            <div class="number-text"><b>블랙박스 테스팅</b> — 명세 기반<br><span style="font-size:12px;color:#64748b">내부 구조를 모르고 입출력만으로 테스트. 동등분할, 경계값 분석 등 사용.</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">4</div>
+            <div class="number-text"><b>화이트박스 테스팅</b> — 구조 기반<br><span style="font-size:12px;color:#64748b">내부 구조(코드, 아키텍처)를 기반으로 테스트. 구문/분기 커버리지 등 사용.</span></div>
+          </div>
+        </div>
+        <div class="tip-box" style="margin-top:10px">
+          <div class="tip-label">💡 ISO 25010 비기능 품질 특성 예시</div>
+          <div class="tip-text">수행 효율성, 호환성, 사용성, 신뢰도, 보안, 유지보수성, 이식성</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔁 확인 vs 리그레션 (복습)</div>
+        <table class="compare-table">
+          <tr><th></th><th>확인 테스팅</th><th>리그레션 테스팅</th></tr>
+          <tr><td><b>목적</b></td><td>결함 수정 확인</td><td>부정적 영향 없는지 확인</td></tr>
+          <tr><td><b>언제</b></td><td>결함 수정 직후</td><td>변경이 있을 때마다</td></tr>
+          <tr><td><b>자동화</b></td><td>상황에 따라</td><td>자동화에 매우 적합</td></tr>
+        </table>
+      </div>
+
+      <button class="complete-btn" id="btn-day12" onclick="markDone(12)">✅ 학습 완료</button>
+      <a href="quiz.html?day=12" class="quiz-link">📝 Day 12 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 13 -->
+    <div class="day-section" id="day13">
+      <div class="day-header"><div class="day-num">DAY 13</div><div class="day-title">유지보수 테스팅</div></div>
+
+      <div class="card">
+        <div class="card-title">🔧 유지보수 테스팅이란?</div>
+        <div class="desc">이미 운영 중인 시스템에 변경이 발생했을 때 수행하는 테스팅입니다.</div>
+        <div class="section" style="margin-top:12px">
+          <div class="section-name">유지보수 테스팅의 3가지 계기</div>
+          <div class="number-list">
+            <div class="number-item">
+              <div class="number-circle">1</div>
+              <div class="number-text"><b>수정사항</b> — 계획된 기능 개선, 릴리스, 긴급 핫픽스 등</div>
+            </div>
+            <div class="number-item">
+              <div class="number-circle">2</div>
+              <div class="number-text"><b>업그레이드/마이그레이션</b> — 운영 환경 변경, 다른 플랫폼으로 이전<br><span style="font-size:12px;color:#64748b">→ 새 환경 관련 테스트 + 데이터 변환 테스트 필요</span></div>
+            </div>
+            <div class="number-item">
+              <div class="number-circle">3</div>
+              <div class="number-text"><b>단종(Retirement)</b> — 시스템 폐기 시<br><span style="font-size:12px;color:#64748b">→ 데이터 보관(archiving) 테스트, 복원/복구 절차 테스트 필요</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📏 유지보수 테스팅 범위 결정 요소</div>
+        <ul class="point-list">
+          <li>변경의 <b>리스크 수준</b> — 높을수록 더 많은 테스팅</li>
+          <li>기존 시스템의 <b>크기</b> — 클수록 영향 범위가 넓음</li>
+          <li><b>변경사항의 크기</b> — 변경이 클수록 더 많은 테스팅</li>
+        </ul>
+        <div class="tip-box" style="margin-top:10px">
+          <div class="tip-label">💡 영향도 분석</div>
+          <div class="tip-text">유지보수 변경 전에 <b>영향도 분석</b>을 수행하여 시스템 다른 부분에 미칠 영향을 파악합니다. 이를 통해 리그레션 테스팅 범위를 결정합니다.</div>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-day13" onclick="markDone(13)">✅ 학습 완료</button>
+      <a href="quiz.html?day=13" class="quiz-link">📝 Day 13 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 14 -->
+    <div class="day-section" id="day14">
+      <div class="day-header"><div class="day-num">DAY 14</div><div class="day-title">1·2장 복습 및 정리</div></div>
+
+      <div class="card">
+        <div class="card-title">📝 1장 핵심 정리</div>
+        <div class="section">
+          <div class="section-name">꼭 기억해야 할 것들</div>
+          <ul class="point-list">
+            <li>테스팅 = 실행만이 아닌 <b>계획~완료까지 전체 활동</b></li>
+            <li><b>7가지 원리</b> 모두 암기 (특히 살충제 패러독스, 결함 집중, 결함 부재의 궤변)</li>
+            <li>오류 → 결함 → 장애 순서와 차이</li>
+            <li>테스팅(제품 지향) vs QA(프로세스 지향)</li>
+            <li>확인 테스팅 vs 리그레션 테스팅</li>
+            <li>독립성: 저자 자신 → 동료 → 외부팀 → 외부조직</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📝 2장 핵심 정리</div>
+        <div class="section">
+          <div class="section-name">꼭 기억해야 할 것들</div>
+          <ul class="point-list">
+            <li>V-모델: 각 개발 단계에 <b>대응하는 테스트 레벨</b> 존재</li>
+            <li>TDD: <b>테스트 먼저</b>, ATDD: <b>인수 조건</b>에서, BDD: <b>Given/When/Then</b></li>
+            <li>시프트 레프트: 후반 테스트를 없애는 게 아니라 <b>더 일찍 시작</b></li>
+            <li><b>5가지 테스트 레벨</b>: 컴포넌트→컴포넌트통합→시스템→시스템통합→인수</li>
+            <li>유지보수 테스팅 계기: <b>수정/업그레이드/단종</b></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎯 자주 틀리는 문제 포인트</div>
+        <div class="warn-box">
+          <div class="warn-label">⚠️ 함정 주의</div>
+          <div class="warn-text">
+            1. 시프트 레프트 = 후반 테스트 무시 → <b>틀림!</b><br>
+            2. DevOps = 수동 테스팅 완전 제거 → <b>틀림!</b><br>
+            3. 결함 있으면 반드시 장애 발생 → <b>틀림!</b><br>
+            4. 테스팅 = 소프트웨어 실행만 → <b>틀림!</b>
+          </div>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-day14" onclick="markDone(14)">✅ 학습 완료</button>
+      <a href="quiz.html?day=14" class="quiz-link">📝 Day 14 퀴즈 풀기</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const DAYS = [8,9,10,11,12,13,14];
+  const progress = JSON.parse(localStorage.getItem('istqb_progress') || '{}');
+  const nav = document.getElementById('dayNav');
+  DAYS.forEach(d => {
+    const btn = document.createElement('button');
+    btn.className = 'day-btn' + (d === 8 ? ' active' : '') + (progress[d]?.studied ? ' done' : '');
+    btn.textContent = `Day ${d}`;
+    btn.onclick = () => switchDay(d);
+    btn.id = `nav-day${d}`;
+    nav.appendChild(btn);
+  });
+  function switchDay(d) {
+    DAYS.forEach(i => { document.getElementById(`day${i}`).classList.remove('show'); document.getElementById(`nav-day${i}`).classList.remove('active'); });
+    document.getElementById(`day${d}`).classList.add('show');
+    document.getElementById(`nav-day${d}`).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  function markDone(d) {
+    const p = JSON.parse(localStorage.getItem('istqb_progress') || '{}');
+    p[d] = { ...(p[d] || {}), studied: true };
+    localStorage.setItem('istqb_progress', JSON.stringify(p));
+    const btn = document.getElementById(`btn-day${d}`);
+    btn.textContent = '✅ 완료됨!'; btn.classList.add('done');
+    document.getElementById(`nav-day${d}`)?.classList.add('done');
+    if (d < 14) setTimeout(() => switchDay(d + 1), 600);
+  }
+  DAYS.forEach(d => { if (progress[d]?.studied) { const btn = document.getElementById(`btn-day${d}`); if (btn) { btn.textContent = '✅ 완료됨!'; btn.classList.add('done'); } } });
+  const params = new URLSearchParams(location.search);
+  const startDay = parseInt(params.get('day'));
+  if (startDay && DAYS.includes(startDay)) switchDay(startDay);
+</script>
+</body>
+</html>

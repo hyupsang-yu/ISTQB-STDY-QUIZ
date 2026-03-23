@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1장 - 테스팅의 기초</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f1f5f9; font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; }
+    .wrap { max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: 60px; }
+    .header { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 20px 16px 16px; position: sticky; top: 0; z-index: 10; }
+    .back-btn { background: none; border: none; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; opacity: 0.85; padding: 0; margin-bottom: 8px; display: block; }
+    .header-badge { font-size: 11px; font-weight: 700; background: rgba(255,255,255,0.2); color: #fff; padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 6px; }
+    .header-title { font-size: 20px; font-weight: 900; color: #fff; }
+    .header-sub { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+    .day-nav { display: flex; gap: 6px; padding: 12px 12px 0; overflow-x: auto; }
+    .day-nav::-webkit-scrollbar { display: none; }
+    .day-btn { flex-shrink: 0; padding: 6px 14px; border-radius: 20px; border: 1.5px solid #e2e8f0; background: #fff; font-size: 12px; font-weight: 700; color: #94a3b8; cursor: pointer; transition: all 0.15s; }
+    .day-btn.active { background: #6366f1; border-color: #6366f1; color: #fff; }
+    .day-btn.done { border-color: #6366f1; color: #6366f1; }
+    .content { padding: 12px; }
+    .day-section { display: none; }
+    .day-section.show { display: block; }
+    .day-header { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 10px; border-left: 4px solid #6366f1; }
+    .day-num { font-size: 11px; font-weight: 700; color: #6366f1; margin-bottom: 4px; }
+    .day-title { font-size: 18px; font-weight: 800; color: #0f172a; }
+    .card { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 10px; }
+    .card-title { font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .section { margin-bottom: 16px; }
+    .section:last-child { margin-bottom: 0; }
+    .section-name { font-size: 12px; font-weight: 800; color: #6366f1; margin-bottom: 8px; padding: 3px 0; border-bottom: 2px solid #6366f118; }
+    .desc { font-size: 13px; color: #334155; line-height: 1.8; }
+    .desc b { color: #0f172a; font-weight: 700; }
+    .point-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .point-list li { font-size: 13px; color: #334155; line-height: 1.7; padding-left: 16px; position: relative; }
+    .point-list li::before { content: '•'; position: absolute; left: 0; color: #6366f1; font-weight: 700; }
+    .point-list li b { color: #0f172a; font-weight: 700; }
+    .compare-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 4px; }
+    .compare-table th { background: #6366f118; color: #6366f1; font-weight: 700; padding: 8px; text-align: center; }
+    .compare-table td { padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: center; color: #334155; vertical-align: top; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .tip-box { background: #fefce8; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px; margin-top: 8px; }
+    .tip-label { font-size: 11px; font-weight: 800; color: #92400e; margin-bottom: 4px; }
+    .tip-text { font-size: 12px; color: #78350f; line-height: 1.7; }
+    .number-list { display: flex; flex-direction: column; gap: 8px; }
+    .number-item { display: flex; gap: 10px; align-items: flex-start; }
+    .number-circle { width: 24px; height: 24px; border-radius: 50%; background: #6366f1; color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .number-text { font-size: 13px; color: #334155; line-height: 1.7; }
+    .number-text b { color: #0f172a; font-weight: 700; }
+    .keyword-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .keyword-card { background: #f8fafc; border-radius: 10px; padding: 10px 12px; border-left: 3px solid #6366f1; }
+    .keyword-term { font-size: 12px; font-weight: 800; color: #6366f1; margin-bottom: 3px; }
+    .keyword-def { font-size: 11px; color: #475569; line-height: 1.5; }
+    .complete-btn { width: 100%; background: #6366f1; color: #fff; border: none; border-radius: 14px; padding: 15px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; }
+    .complete-btn.done { background: #10b981; }
+    .quiz-link { width: 100%; background: #0f172a; color: #fff; border: none; border-radius: 14px; padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; text-decoration: none; display: block; text-align: center; }
+    .flow-box { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .flow-item { background: #6366f118; color: #6366f1; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 8px; }
+    .flow-arrow { color: #94a3b8; font-size: 12px; }
+    .warn-box { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 10px; padding: 12px 14px; margin-top: 8px; }
+    .warn-label { font-size: 11px; font-weight: 800; color: #991b1b; margin-bottom: 4px; }
+    .warn-text { font-size: 12px; color: #7f1d1d; line-height: 1.7; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <button class="back-btn" onclick="location.href='index.html'">← 메인으로</button>
+    <span class="header-badge">1장 · Day 1–7</span>
+    <div class="header-title">테스팅의 기초</div>
+    <div class="header-sub">ISTQB CTFL 1장 전범위</div>
+  </div>
+
+  <div class="day-nav" id="dayNav"></div>
+  <div class="content">
+
+    <!-- DAY 1 -->
+    <div class="day-section show" id="day1">
+      <div class="day-header"><div class="day-num">DAY 1</div><div class="day-title">테스팅이란 무엇인가?</div></div>
+
+      <div class="card">
+        <div class="card-title">📌 테스팅의 정의</div>
+        <div class="section">
+          <div class="desc">소프트웨어 테스팅은 <b>소프트웨어 산출물과 관련 작업 산출물을 평가하고, 이들이 지정된 요구사항을 충족하는지 결정하며, 목적에 부합하는지 입증하고, 결함을 발견하는 일련의 활동</b>입니다.</div>
+        </div>
+        <div class="section">
+          <div class="section-name">⚠️ 중요한 오해 바로잡기</div>
+          <div class="warn-box">
+            <div class="warn-label">❌ 흔한 오해</div>
+            <div class="warn-text">테스팅 = 소프트웨어 실행 (X)<br>테스팅은 단순히 소프트웨어를 실행하는 것이 아닙니다!</div>
+          </div>
+          <div class="desc" style="margin-top:8px">테스팅은 <b>계획, 모니터링, 분석, 설계, 구현, 실행, 완료</b> 등 다양한 활동을 포함합니다.</div>
+        </div>
+        <div class="section">
+          <div class="section-name">🎯 테스팅의 7가지 목적</div>
+          <div class="number-list">
+            <div class="number-item"><div class="number-circle">1</div><div class="number-text"><b>작업 산출물 품질 평가</b> — 요구사항, 사용자 스토리, 설계, 코드 등을 평가</div></div>
+            <div class="number-item"><div class="number-circle">2</div><div class="number-text"><b>요구사항 충족 여부 베리피케이션</b> — 명세대로 만들어졌는지 확인</div></div>
+            <div class="number-item"><div class="number-circle">3</div><div class="number-text"><b>완성 및 기대 충족 여부 밸리데이션</b> — 사용자 실제 요구를 만족하는지 확인</div></div>
+            <div class="number-item"><div class="number-circle">4</div><div class="number-text"><b>결함 유발 및 장애 발견</b> — 동적 테스팅으로 장애를 유발하여 결함 발견</div></div>
+            <div class="number-item"><div class="number-circle">5</div><div class="number-text"><b>품질 수준에 대한 자신감 제공</b></div></div>
+            <div class="number-item"><div class="number-circle">6</div><div class="number-text"><b>리스크 수준 완화</b> — 품질 부족으로 인한 비즈니스 리스크 줄이기</div></div>
+            <div class="number-item"><div class="number-circle">7</div><div class="number-text"><b>법적·계약적 요구사항 준수</b></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔍 베리피케이션 vs 밸리데이션</div>
+        <table class="compare-table">
+          <tr><th>구분</th><th>베리피케이션</th><th>밸리데이션</th></tr>
+          <tr><td><b>질문</b></td><td>"제대로 만들었나?"</td><td>"제대로 된 걸 만들었나?"</td></tr>
+          <tr><td><b>초점</b></td><td>명세/요구사항 충족</td><td>사용자 실제 필요 충족</td></tr>
+          <tr><td><b>예시</b></td><td>설계서대로 코딩됐는지 확인</td><td>사용자가 실제 쓸 수 있는지 확인</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚡ 동적 테스팅 vs 정적 테스팅</div>
+        <table class="compare-table">
+          <tr><th>구분</th><th>동적 테스팅</th><th>정적 테스팅</th></tr>
+          <tr><td><b>소프트웨어 실행</b></td><td>✅ 실행함</td><td>❌ 실행 안 함</td></tr>
+          <tr><td><b>방법</b></td><td>테스트 케이스 실행</td><td>리뷰, 정적 분석</td></tr>
+          <tr><td><b>대상</b></td><td>실행 가능한 코드</td><td>코드, 문서, 요구사항 등</td></tr>
+          <tr><td><b>결함 발견</b></td><td>장애를 통해 간접 발견</td><td>결함 직접 식별</td></tr>
+        </table>
+        <div class="tip-box" style="margin-top:10px">
+          <div class="tip-label">💡 시험 포인트</div>
+          <div class="tip-text">정적 테스팅은 소프트웨어를 실행하지 않고도 코드, 설계서, 요구사항 명세서 등을 검토하는 것입니다. 코드 리뷰가 대표적인 예입니다.</div>
+        </div>
+      </div>
+      <button class="complete-btn" id="btn-day1" onclick="markDone(1)">✅ 학습 완료</button>
+      <a href="quiz.html?day=1" class="quiz-link">📝 Day 1 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 2 -->
+    <div class="day-section" id="day2">
+      <div class="day-header"><div class="day-num">DAY 2</div><div class="day-title">테스팅과 디버깅</div></div>
+
+      <div class="card">
+        <div class="card-title">🔧 테스팅 vs 디버깅</div>
+        <div class="section">
+          <div class="desc">테스팅과 디버깅은 <b>완전히 별개의 활동</b>입니다. 이 둘을 혼동하면 안 됩니다.</div>
+          <table class="compare-table" style="margin-top:10px">
+            <tr><th>구분</th><th>테스팅</th><th>디버깅</th></tr>
+            <tr><td><b>목적</b></td><td>결함/장애 식별</td><td>결함 원인 찾아 제거</td></tr>
+            <tr><td><b>담당자</b></td><td>테스터</td><td>개발자</td></tr>
+            <tr><td><b>활동</b></td><td>테스트 실행 → 장애 발견</td><td>원인 분석 → 수정</td></tr>
+          </table>
+        </div>
+        <div class="section">
+          <div class="section-name">🔄 디버깅 프로세스 순서 (시험 필수!)</div>
+          <div class="flow-box">
+            <span class="flow-item">① 장애 재현</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">② 분석(결함 찾기)</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">③ 결함 수정</span>
+          </div>
+          <div class="tip-box" style="margin-top:10px">
+            <div class="tip-label">💡 시험 포인트</div>
+            <div class="tip-text">디버깅 순서는 <b>장애 재현 → 분석 → 수정</b>입니다. 순서가 바뀌면 오답!</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">✅ 확인 테스팅 vs 리그레션 테스팅</div>
+        <div class="section">
+          <div class="section-name">확인 테스팅 (Confirmation Testing)</div>
+          <ul class="point-list">
+            <li>결함을 <b>수정한 후</b>, 그 결함이 실제로 해결됐는지 확인하는 테스팅</li>
+            <li>원래 결함을 발견했던 <b>동일한 테스터</b>가 수행하는 것이 바람직함</li>
+            <li>목적: <b>결함 수정 확인</b></li>
+          </ul>
+        </div>
+        <div class="section">
+          <div class="section-name">리그레션 테스팅 (Regression Testing)</div>
+          <ul class="point-list">
+            <li>변경(수정, 새 기능 추가 등) 후 <b>다른 부분에 부정적 영향이 없는지</b> 확인</li>
+            <li>반복적으로 실행되므로 <b>자동화에 적합</b></li>
+            <li>목적: <b>변경으로 인한 부작용 확인</b></li>
+          </ul>
+        </div>
+        <div class="tip-box">
+          <div class="tip-label">💡 핵심 구분</div>
+          <div class="tip-text">확인 테스팅 = "이 버그 고쳤어?" 확인<br>리그레션 테스팅 = "고치다가 다른 데 망가진 거 없어?" 확인</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📍 정적 테스팅에서의 디버깅</div>
+        <div class="desc">정적 테스팅(리뷰 등)에서 결함을 발견한 경우, 디버깅은 <b>해당 결함을 제거하는 것</b>에 중점을 둡니다. 장애를 재현할 필요 없이 결함을 직접 찾았기 때문입니다.</div>
+      </div>
+
+      <button class="complete-btn" id="btn-day2" onclick="markDone(2)">✅ 학습 완료</button>
+      <a href="quiz.html?day=2" class="quiz-link">📝 Day 2 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 3 -->
+    <div class="day-section" id="day3">
+      <div class="day-header"><div class="day-num">DAY 3</div><div class="day-title">테스팅이 왜 필요한가?</div></div>
+
+      <div class="card">
+        <div class="card-title">💼 테스팅이 성공에 기여하는 방법</div>
+        <div class="section">
+          <ul class="point-list">
+            <li>테스팅은 개발 초기부터 참여해 <b>요구사항, 설계, 코드의 품질을 높임</b></li>
+            <li>결함을 <b>일찍 발견할수록 수정 비용이 저렴</b>함 (조기 테스팅 원리)</li>
+            <li>릴리스 전 소프트웨어 품질에 대한 <b>자신감 제공</b></li>
+            <li>계약적·법적 요구사항이나 <b>규제 표준 준수</b> 증명</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🏢 테스팅 vs 품질보증(QA)</div>
+        <table class="compare-table">
+          <tr><th>구분</th><th>테스팅</th><th>품질보증(QA)</th></tr>
+          <tr><td><b>초점</b></td><td>제품 지향적</td><td>프로세스 지향적</td></tr>
+          <tr><td><b>접근법</b></td><td>교정(결함 발견 후 수정)</td><td>예방(좋은 프로세스로 결함 방지)</td></tr>
+          <tr><td><b>목적</b></td><td>특정 산출물의 품질 측정</td><td>개발/테스트 프로세스 개선</td></tr>
+          <tr><td><b>결과 활용</b></td><td>결함 수정에 활용</td><td>프로세스 개선 피드백으로 활용</td></tr>
+        </table>
+        <div class="tip-box" style="margin-top:10px">
+          <div class="tip-label">💡 핵심</div>
+          <div class="tip-text">QA는 "좋은 프로세스를 따르면 좋은 제품이 나온다"는 가정을 기반으로 합니다. 테스팅의 결과는 QA 피드백으로도 활용됩니다.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚡ 오류 → 결함 → 장애 → 근본원인</div>
+        <div class="section">
+          <div class="number-list">
+            <div class="number-item"><div class="number-circle" style="background:#ef4444">1</div><div class="number-text"><b>오류(Error)</b> — 사람(개발자, 분석가 등)의 실수. 결함을 만들어냄</div></div>
+            <div class="number-item"><div class="number-circle" style="background:#f59e0b">2</div><div class="number-text"><b>결함(Defect/Bug)</b> — 오류로 인해 코드나 산출물에 생긴 문제. 실행 시 장애를 일으킬 수 있음</div></div>
+            <div class="number-item"><div class="number-circle" style="background:#6366f1">3</div><div class="number-text"><b>장애(Failure)</b> — 결함이 있는 코드가 실행됐을 때 나타나는 증상. 단, 결함이 있어도 장애가 안 날 수도 있음</div></div>
+            <div class="number-item"><div class="number-circle" style="background:#10b981">4</div><div class="number-text"><b>근본원인(Root Cause)</b> — 오류가 발생한 근본적인 이유. 근본원인 분석으로 프로세스 개선 가능</div></div>
+          </div>
+          <div class="warn-box" style="margin-top:10px">
+            <div class="warn-label">⚠️ 주의</div>
+            <div class="warn-text">결함이 있다고 반드시 장애가 발생하지는 않습니다. 해당 코드가 실행되지 않거나 특정 조건이 안 맞으면 장애가 안 날 수 있습니다.</div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-name">장애의 원인 — 사람만이 아니다!</div>
+          <ul class="point-list">
+            <li>개발자의 코딩 실수 (가장 일반적)</li>
+            <li>방사선, 전자기장 등 <b>환경 조건</b>으로 인한 펌웨어 문제도 장애 원인이 될 수 있음</li>
+          </ul>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-day3" onclick="markDone(3)">✅ 학습 완료</button>
+      <a href="quiz.html?day=3" class="quiz-link">📝 Day 3 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 4 -->
+    <div class="day-section" id="day4">
+      <div class="day-header"><div class="day-num">DAY 4</div><div class="day-title">테스팅의 7가지 원리</div></div>
+
+      <div class="card">
+        <div class="card-title">📜 7가지 원리 전체 (반드시 암기!)</div>
+        <div class="number-list">
+          <div class="number-item">
+            <div class="number-circle">1</div>
+            <div class="number-text"><b>테스팅은 결함의 존재를 밝히는 것이지 결함 없음을 증명하지 않는다</b><br><span style="font-size:12px;color:#64748b">테스팅으로 결함이 없음을 보장할 수 없습니다. 잔존 결함이 있을 수 있습니다.</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">2</div>
+            <div class="number-text"><b>완벽한 테스팅은 불가능하다</b><br><span style="font-size:12px;color:#64748b">모든 입력 조합, 경로를 다 테스트하는 건 불가능. 리스크와 우선순위 기반으로 접근해야 합니다.</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">3</div>
+            <div class="number-text"><b>조기 테스팅으로 시간과 비용을 절약한다 (Shift Left)</b><br><span style="font-size:12px;color:#64748b">결함은 일찍 발견할수록 수정 비용이 적습니다. 정적 테스팅도 조기 테스팅의 일환입니다.</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">4</div>
+            <div class="number-text"><b>결함은 집중된다 (Defect Clustering)</b><br><span style="font-size:12px;color:#64748b">결함의 대부분은 소수의 컴포넌트에 집중됩니다. 파레토 원리(80:20)와 유사합니다.</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">5</div>
+            <div class="number-text"><b>테스트 효과는 감소한다 (살충제 패러독스)</b><br><span style="font-size:12px;color:#64748b">같은 테스트를 반복하면 새로운 결함을 발견하는 능력이 감소합니다. 주기적으로 테스트를 갱신해야 합니다.</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">6</div>
+            <div class="number-text"><b>테스팅은 정황에 의존한다</b><br><span style="font-size:12px;color:#64748b">모든 상황에 맞는 단 하나의 테스팅 접근법은 없습니다. 안전 중시 소프트웨어 vs 전자상거래는 다르게 접근해야 합니다.</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">7</div>
+            <div class="number-text"><b>결함 부재는 궤변이다</b><br><span style="font-size:12px;color:#64748b">결함을 다 수정해도 사용자 기대/요구를 못 맞추면 실패한 소프트웨어입니다. 밸리데이션이 중요한 이유입니다.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🐛 살충제 패러독스 심화</div>
+        <div class="desc">같은 테스트를 계속 실행하면 마치 살충제를 계속 뿌리면 벌레가 내성이 생기듯이, <b>새로운 결함을 발견하는 효과가 점점 줄어듭니다</b>.</div>
+        <div class="tip-box" style="margin-top:10px">
+          <div class="tip-label">💡 극복 방법</div>
+          <div class="tip-text">기존 테스트 케이스와 데이터를 <b>정기적으로 수정·보완</b>하고, 새로운 테스트 케이스를 작성해야 합니다.</div>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-day4" onclick="markDone(4)">✅ 학습 완료</button>
+      <a href="quiz.html?day=4" class="quiz-link">📝 Day 4 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 5 -->
+    <div class="day-section" id="day5">
+      <div class="day-header"><div class="day-num">DAY 5</div><div class="day-title">테스트 활동과 업무</div></div>
+
+      <div class="card">
+        <div class="card-title">🔄 테스트 프로세스 7단계</div>
+        <div class="section">
+          <div class="tip-box">
+            <div class="tip-label">💡 중요</div>
+            <div class="tip-text">이 활동들은 순차적이 아닌 <b>반복적·병렬</b>로 수행됩니다!</div>
+          </div>
+        </div>
+        <div class="number-list" style="margin-top:12px">
+          <div class="number-item">
+            <div class="number-circle">1</div>
+            <div class="number-text"><b>테스트 계획 (Test Planning)</b><br><span style="font-size:12px;color:#64748b">테스트 목적 정의, 접근법 선택, 자원/일정/비용 계획</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">2</div>
+            <div class="number-text"><b>테스트 모니터링·제어 (Monitoring & Control)</b><br><span style="font-size:12px;color:#64748b">모니터링: 진행상황 정보 수집 / 제어: 목적 달성을 위한 조치</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">3</div>
+            <div class="number-text"><b>테스트 분석 (Test Analysis) — "무엇을?"</b><br><span style="font-size:12px;color:#64748b">테스트 베이시스를 분석해 테스트 컨디션 도출</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">4</div>
+            <div class="number-text"><b>테스트 설계 (Test Design) — "어떻게?"</b><br><span style="font-size:12px;color:#64748b">테스트 컨디션을 테스트 케이스로 구체화, 기법 선정</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">5</div>
+            <div class="number-text"><b>테스트 구현 (Test Implementation)</b><br><span style="font-size:12px;color:#64748b">테스트 스크립트, 테스트 데이터, 테스트 환경 준비</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">6</div>
+            <div class="number-text"><b>테스트 실행 (Test Execution)</b><br><span style="font-size:12px;color:#64748b">테스트 케이스 실행, 결과 기록, 이상 사항 보고</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">7</div>
+            <div class="number-text"><b>테스트 완료 (Test Completion)</b><br><span style="font-size:12px;color:#64748b">완료 보고서 작성, 테스트웨어 보관, 교훈 도출</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 분석 vs 설계 vs 구현 핵심 구분</div>
+        <table class="compare-table">
+          <tr><th>활동</th><th>핵심 질문</th><th>산출물</th></tr>
+          <tr><td>테스트 분석</td><td><b>무엇을</b> 테스트?</td><td>테스트 컨디션</td></tr>
+          <tr><td>테스트 설계</td><td><b>어떻게</b> 테스트?</td><td>테스트 케이스</td></tr>
+          <tr><td>테스트 구현</td><td><b>준비됐나?</b></td><td>테스트 스크립트, 데이터</td></tr>
+        </table>
+      </div>
+
+      <button class="complete-btn" id="btn-day5" onclick="markDone(5)">✅ 학습 완료</button>
+      <a href="quiz.html?day=5" class="quiz-link">📝 Day 5 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 6 -->
+    <div class="day-section" id="day6">
+      <div class="day-header"><div class="day-num">DAY 6</div><div class="day-title">테스트웨어와 추적성</div></div>
+
+      <div class="card">
+        <div class="card-title">📦 테스트웨어란?</div>
+        <div class="desc">테스트 활동의 결과로 생성되는 모든 산출물을 <b>테스트웨어</b>라 합니다.</div>
+        <div class="section" style="margin-top:12px">
+          <table class="compare-table">
+            <tr><th>활동</th><th>주요 산출물</th></tr>
+            <tr><td>테스트 계획</td><td>테스트 계획서, 리스크 관리 대장</td></tr>
+            <tr><td>테스트 분석</td><td>우선순위가 지정된 테스트 컨디션</td></tr>
+            <tr><td>테스트 설계</td><td>테스트 케이스, 테스트 차터</td></tr>
+            <tr><td>테스트 구현</td><td>테스트 절차, 테스트 스위트, 테스트 데이터</td></tr>
+            <tr><td>테스트 실행</td><td>테스트 로그, 결함 보고서</td></tr>
+            <tr><td>테스트 완료</td><td>테스트 완료 보고서, 교훈 문서</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔗 추적성(Traceability)이란?</div>
+        <div class="desc"><b>테스트 베이시스 요소 ↔ 테스트웨어 ↔ 테스트 결과 ↔ 결함</b> 간의 연관 관계를 유지하는 것입니다.</div>
+        <div class="section" style="margin-top:12px">
+          <div class="section-name">추적성의 이점</div>
+          <ul class="point-list">
+            <li><b>커버리지 평가</b> — 요구사항이 얼마나 테스트됐는지 확인 가능</li>
+            <li><b>변경 영향 파악</b> — 요구사항 변경 시 영향받는 테스트 케이스 식별</li>
+            <li><b>IT 감사 지원</b> — 감사 기준 충족 증명</li>
+            <li><b>이해관계자 소통</b> — 진행 상황과 품질 수준을 명확히 전달</li>
+          </ul>
+        </div>
+        <div class="tip-box">
+          <div class="tip-label">💡 핵심</div>
+          <div class="tip-text">추적성이 없으면 "이 요구사항은 테스트됐나요?"라는 질문에 답하기 어렵습니다.</div>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-day6" onclick="markDone(6)">✅ 학습 완료</button>
+      <a href="quiz.html?day=6" class="quiz-link">📝 Day 6 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 7 -->
+    <div class="day-section" id="day7">
+      <div class="day-header"><div class="day-num">DAY 7</div><div class="day-title">테스팅 역할과 필수 기술</div></div>
+
+      <div class="card">
+        <div class="card-title">👥 두 가지 주요 역할</div>
+        <table class="compare-table">
+          <tr><th>구분</th><th>테스트 관리자</th><th>테스터</th></tr>
+          <tr><td><b>주요 활동</b></td><td>계획, 모니터링, 제어, 완료</td><td>분석, 설계, 구현, 실행</td></tr>
+          <tr><td><b>초점</b></td><td>관리·전략적</td><td>기술·실무적</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🤝 전체 팀 접근법 (Whole Team Approach)</div>
+        <ul class="point-list">
+          <li>모든 팀원이 <b>품질에 대한 책임</b>을 공유</li>
+          <li>팀원들은 <b>작업 공간을 공유</b>하고 협업</li>
+          <li>테스터와 개발자, 비즈니스 담당자가 함께 작업</li>
+        </ul>
+        <div class="warn-box" style="margin-top:10px">
+          <div class="warn-label">⚠️ 전체 팀 접근법이 적합하지 않은 경우</div>
+          <div class="warn-text">안전이 치명적인 시스템(항공, 의료 등)에서는 높은 수준의 독립적 테스팅이 필요할 수 있습니다.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎯 테스팅 독립성 수준 (낮음 → 높음)</div>
+        <div class="number-list">
+          <div class="number-item"><div class="number-circle" style="background:#94a3b8">1</div><div class="number-text"><b>저자(개발자) 자신</b>이 테스트 — 독립성 가장 낮음</div></div>
+          <div class="number-item"><div class="number-circle" style="background:#6366f1">2</div><div class="number-text"><b>같은 팀의 동료</b>가 테스트</div></div>
+          <div class="number-item"><div class="number-circle" style="background:#0ea5e9">3</div><div class="number-text"><b>다른 팀/조직 내 별도 테스트팀</b>이 테스트</div></div>
+          <div class="number-item"><div class="number-circle" style="background:#10b981">4</div><div class="number-text"><b>외부 조직(아웃소싱)</b>이 테스트 — 독립성 가장 높음</div></div>
+        </div>
+        <div class="tip-box" style="margin-top:10px">
+          <div class="tip-label">💡 독립성이 높으면?</div>
+          <div class="tip-text">인지 편향 없이 결함을 더 많이 발견할 수 있습니다. 하지만 개발팀과 소통이 어려워질 수 있다는 단점도 있습니다.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🛠️ 테스터 필수 기술</div>
+        <div class="keyword-grid">
+          <div class="keyword-card"><div class="keyword-term">분석적 사고</div><div class="keyword-def">복잡한 시스템을 분석하고 문제를 구조화</div></div>
+          <div class="keyword-card"><div class="keyword-term">꼼꼼함</div><div class="keyword-def">세부사항에 주의를 기울이는 능력</div></div>
+          <div class="keyword-card"><div class="keyword-term">의사소통</div><div class="keyword-def">나쁜 소식도 명확히 전달하는 능력</div></div>
+          <div class="keyword-card"><div class="keyword-term">기술 지식</div><div class="keyword-def">테스트 도구 사용 및 자동화 능력</div></div>
+        </div>
+        <div class="tip-box" style="margin-top:10px">
+          <div class="tip-label">💡 의사소통이 중요한 이유</div>
+          <div class="tip-text">결함을 보고할 때 개발자가 방어적이 될 수 있습니다. 테스터는 나쁜 소식을 전달하는 역할이므로 의사소통 기술이 매우 중요합니다.</div>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-day7" onclick="markDone(7)">✅ 학습 완료</button>
+      <a href="quiz.html?day=7" class="quiz-link">📝 Day 7 퀴즈 풀기</a>
+    </div>
+
+  </div><!-- /content -->
+</div>
+
+<script>
+  const DAYS = [1,2,3,4,5,6,7];
+  const progress = JSON.parse(localStorage.getItem('istqb_progress') || '{}');
+
+  // 네비 버튼 생성
+  const nav = document.getElementById('dayNav');
+  DAYS.forEach(d => {
+    const btn = document.createElement('button');
+    btn.className = 'day-btn' + (d === 1 ? ' active' : '') + (progress[d]?.studied ? ' done' : '');
+    btn.textContent = `Day ${d}`;
+    btn.onclick = () => switchDay(d);
+    btn.id = `nav-day${d}`;
+    nav.appendChild(btn);
+  });
+
+  function switchDay(d) {
+    DAYS.forEach(i => {
+      document.getElementById(`day${i}`).classList.remove('show');
+      document.getElementById(`nav-day${i}`).classList.remove('active');
+    });
+    document.getElementById(`day${d}`).classList.add('show');
+    document.getElementById(`nav-day${d}`).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function markDone(d) {
+    progress[d] = { ...(progress[d] || {}), studied: true };
+    localStorage.setItem('istqb_progress', JSON.stringify(progress));
+    const btn = document.getElementById(`btn-day${d}`);
+    btn.textContent = '✅ 완료됨!';
+    btn.classList.add('done');
+    const navBtn = document.getElementById(`nav-day${d}`);
+    if (navBtn) navBtn.classList.add('done');
+    // 다음 Day로 자동 이동
+    if (d < 7) setTimeout(() => switchDay(d + 1), 600);
+  }
+
+  // 완료된 날은 버튼 표시 갱신
+  DAYS.forEach(d => {
+    if (progress[d]?.studied) {
+      const btn = document.getElementById(`btn-day${d}`);
+      if (btn) { btn.textContent = '✅ 완료됨!'; btn.classList.add('done'); }
+    }
+  });
+
+  // URL 파라미터로 특정 day 열기
+  const params = new URLSearchParams(location.search);
+  const startDay = parseInt(params.get('day'));
+  if (startDay && DAYS.includes(startDay)) switchDay(startDay);
+</script>
+</body>
+</html>

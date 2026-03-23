@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>5장 - 테스트 관리</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f1f5f9; font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; }
+    .wrap { max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: 60px; }
+    .header { background: linear-gradient(135deg, #ef4444, #dc2626); padding: 20px 16px 16px; position: sticky; top: 0; z-index: 10; }
+    .back-btn { background: none; border: none; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; opacity: 0.85; padding: 0; margin-bottom: 8px; display: block; }
+    .header-badge { font-size: 11px; font-weight: 700; background: rgba(255,255,255,0.2); color: #fff; padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 6px; }
+    .header-title { font-size: 20px; font-weight: 900; color: #fff; }
+    .header-sub { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+    .day-nav { display: flex; gap: 6px; padding: 12px 12px 0; overflow-x: auto; }
+    .day-nav::-webkit-scrollbar { display: none; }
+    .day-btn { flex-shrink: 0; padding: 6px 14px; border-radius: 20px; border: 1.5px solid #e2e8f0; background: #fff; font-size: 12px; font-weight: 700; color: #94a3b8; cursor: pointer; }
+    .day-btn.active { background: #ef4444; border-color: #ef4444; color: #fff; }
+    .day-btn.done { border-color: #ef4444; color: #ef4444; }
+    .content { padding: 12px; }
+    .day-section { display: none; }
+    .day-section.show { display: block; }
+    .day-header { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 10px; border-left: 4px solid #ef4444; }
+    .day-num { font-size: 11px; font-weight: 700; color: #ef4444; margin-bottom: 4px; }
+    .day-title { font-size: 18px; font-weight: 800; color: #0f172a; }
+    .card { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 10px; }
+    .card-title { font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 12px; }
+    .section { margin-bottom: 16px; }
+    .section:last-child { margin-bottom: 0; }
+    .section-name { font-size: 12px; font-weight: 800; color: #ef4444; margin-bottom: 8px; padding: 3px 0; border-bottom: 2px solid #ef444418; }
+    .desc { font-size: 13px; color: #334155; line-height: 1.8; }
+    .desc b { color: #0f172a; font-weight: 700; }
+    .point-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .point-list li { font-size: 13px; color: #334155; line-height: 1.7; padding-left: 16px; position: relative; }
+    .point-list li::before { content: '•'; position: absolute; left: 0; color: #ef4444; font-weight: 700; }
+    .point-list li b { color: #0f172a; font-weight: 700; }
+    .compare-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .compare-table th { background: #ef444418; color: #ef4444; font-weight: 700; padding: 8px; text-align: center; }
+    .compare-table td { padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: center; color: #334155; vertical-align: top; font-size: 12px; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .tip-box { background: #fefce8; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px; margin-top: 8px; }
+    .tip-label { font-size: 11px; font-weight: 800; color: #92400e; margin-bottom: 4px; }
+    .tip-text { font-size: 12px; color: #78350f; line-height: 1.7; }
+    .number-list { display: flex; flex-direction: column; gap: 8px; }
+    .number-item { display: flex; gap: 10px; align-items: flex-start; }
+    .number-circle { width: 24px; height: 24px; border-radius: 50%; background: #ef4444; color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .number-text { font-size: 13px; color: #334155; line-height: 1.7; }
+    .number-text b { color: #0f172a; font-weight: 700; }
+    .warn-box { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 10px; padding: 12px 14px; margin-top: 8px; }
+    .warn-label { font-size: 11px; font-weight: 800; color: #991b1b; margin-bottom: 4px; }
+    .warn-text { font-size: 12px; color: #7f1d1d; line-height: 1.7; }
+    .example-box { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 12px 14px; margin-top: 8px; }
+    .example-label { font-size: 11px; font-weight: 800; color: #0369a1; margin-bottom: 6px; }
+    .example-text { font-size: 12px; color: #0c4a6e; line-height: 1.7; font-family: monospace; }
+    .complete-btn { width: 100%; background: #ef4444; color: #fff; border: none; border-radius: 14px; padding: 15px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; }
+    .complete-btn.done { background: #10b981; }
+    .quiz-link { width: 100%; background: #0f172a; color: #fff; border: none; border-radius: 14px; padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; text-decoration: none; display: block; text-align: center; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <button class="back-btn" onclick="location.href='index.html'">← 메인으로</button>
+    <span class="header-badge">5장 · Day 23–28</span>
+    <div class="header-title">테스트 관리</div>
+    <div class="header-sub">계획, 추정, 리스크, 모니터링, 결함 관리</div>
+  </div>
+
+  <div class="day-nav" id="dayNav"></div>
+  <div class="content">
+
+    <!-- DAY 23 -->
+    <div class="day-section show" id="day23">
+      <div class="day-header"><div class="day-num">DAY 23</div><div class="day-title">테스트 계획</div></div>
+
+      <div class="card">
+        <div class="card-title">📋 테스트 계획서 주요 내용</div>
+        <ul class="point-list">
+          <li><b>테스팅 정황</b> — 테스트 범위, 목적, 가정, 제약</li>
+          <li><b>이해관계자</b> — 역할과 책임</li>
+          <li><b>의사소통</b> — 방법, 빈도, 문서 템플릿</li>
+          <li><b>리스크 목록</b> — 식별된 리스크</li>
+          <li><b>테스트 접근법</b> — 기법, 레벨, 유형</li>
+          <li><b>예산 및 일정</b></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🚦 시작 조건 vs 완료 조건</div>
+        <table class="compare-table">
+          <tr><th>구분</th><th>시작 조건 (Entry)</th><th>완료 조건 (Exit)</th></tr>
+          <tr><td><b>역할</b></td><td>활동 시작 전 충족해야 할 조건</td><td>활동 종료 기준</td></tr>
+          <tr><td><b>예시</b></td><td>테스트 환경 준비됨<br>테스트 케이스 작성 완료</td><td>커버리지 목표 달성<br>심각도 높은 결함 없음</td></tr>
+          <tr><td><b>미충족 시</b></td><td>활동 시작 어려움<br>시간·비용 증가</td><td>릴리스 불가</td></tr>
+        </table>
+        <div class="tip-box" style="margin-top:10px">
+          <div class="tip-label">💡 애자일에서는?</div>
+          <div class="tip-text">완료 조건 = <b>완료의 정의 (Definition of Done)</b></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📅 릴리스 계획 vs 반복 주기 계획</div>
+        <table class="compare-table">
+          <tr><th>구분</th><th>릴리스 계획</th><th>반복 주기 계획</th></tr>
+          <tr><td><b>범위</b></td><td>전체 릴리스 수준</td><td>단일 반복 주기</td></tr>
+          <tr><td><b>테스터 활동</b></td><td>리스크 분석 참여<br>테스트 접근법 결정</td><td>사용자 스토리 리스크 분석<br>테스트 용이성 판단</td></tr>
+        </table>
+      </div>
+
+      <button class="complete-btn" id="btn-day23" onclick="markDone(23)">✅ 학습 완료</button>
+      <a href="quiz.html?day=23" class="quiz-link">📝 Day 23 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 24 -->
+    <div class="day-section" id="day24">
+      <div class="day-header"><div class="day-num">DAY 24</div><div class="day-title">테스트 추정 기법</div></div>
+
+      <div class="card">
+        <div class="card-title">📊 4가지 추정 기법</div>
+        <div class="number-list">
+          <div class="number-item">
+            <div class="number-circle">1</div>
+            <div class="number-text"><b>비율 기반 추정</b><br><span style="font-size:12px;color:#64748b">이전 프로젝트의 비율(과거 데이터) 활용. 예: "개발 대비 테스팅 = 1:2"</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">2</div>
+            <div class="number-text"><b>외삽법 (Extrapolation)</b><br><span style="font-size:12px;color:#64748b">현재 프로젝트의 측정값으로 미래 예측. <b>반복적 SDLC에 적합</b>. 일찍 측정할수록 정확도 낮음</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">3</div>
+            <div class="number-text"><b>와이드밴드 델파이 (Wideband Delphi)</b><br><span style="font-size:12px;color:#64748b">전문가들이 독립적으로 추정 후 토론, 재추정 반복. <b>플래닝 포커</b>가 변형 기법</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">4</div>
+            <div class="number-text"><b>3점 추정</b><br><span style="font-size:12px;color:#64748b">낙관적(a), 확률적(m), 비관적(b) 3가지 추정값 활용</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔢 3점 추정 공식 (시험 필수!)</div>
+        <div class="example-box">
+          <div class="example-label">공식</div>
+          <div class="example-text">
+            E = (a + 4m + b) / 6<br>
+            SD = (b - a) / 6<br><br>
+            a = 낙관적 추정 (Optimistic)<br>
+            m = 확률적 추정 (Most Likely)<br>
+            b = 비관적 추정 (Pessimistic)
+          </div>
+        </div>
+        <div class="example-box" style="margin-top:8px">
+          <div class="example-label">📝 예시: a=6, m=9, b=18일 때</div>
+          <div class="example-text">
+            E = (6 + 4×9 + 18) / 6<br>
+            E = (6 + 36 + 18) / 6<br>
+            E = 60 / 6 = <b>10 MH</b><br><br>
+            SD = (18 - 6) / 6 = 2
+          </div>
+        </div>
+        <div class="tip-box">
+          <div class="tip-label">💡 추정 정확도 높이는 법</div>
+          <div class="tip-text">큰 작업을 <b>여러 개의 작은 작업</b>으로 나눈 후 각각 추정하면 더 정확합니다.</div>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-day24" onclick="markDone(24)">✅ 학습 완료</button>
+      <a href="quiz.html?day=24" class="quiz-link">📝 Day 24 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 25 -->
+    <div class="day-section" id="day25">
+      <div class="day-header"><div class="day-num">DAY 25</div><div class="day-title">우선순위와 피라미드/사분면</div></div>
+
+      <div class="card">
+        <div class="card-title">🎯 테스트 케이스 우선순위 결정</div>
+        <div class="number-list">
+          <div class="number-item"><div class="number-circle">1</div><div class="number-text"><b>리스크 기반 우선순위</b> — 리스크가 높은 테스트를 먼저 실행</div></div>
+          <div class="number-item"><div class="number-circle">2</div><div class="number-text"><b>커버리지 기반 우선순위</b> — 추가 커버리지를 제공하는 테스트 먼저</div></div>
+          <div class="number-item"><div class="number-circle">3</div><div class="number-text"><b>요구사항 기반 우선순위</b> — 이해관계자 우선순위에 따라</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔺 테스트 피라미드</div>
+        <div style="background:#f8fafc;border-radius:12px;padding:16px;text-align:center">
+          <div style="background:#ef4444;color:#fff;padding:8px;border-radius:8px;font-size:12px;font-weight:700;margin-bottom:6px">E2E / UI 테스트 (적음, 느림)</div>
+          <div style="background:#f59e0b;color:#fff;padding:8px;border-radius:8px;font-size:12px;font-weight:700;margin-bottom:6px">통합(서비스) 테스트 (중간)</div>
+          <div style="background:#10b981;color:#fff;padding:8px;border-radius:8px;font-size:12px;font-weight:700">단위 테스트 (많음, 빠름)</div>
+        </div>
+        <ul class="point-list" style="margin-top:10px">
+          <li><b>하층</b>(단위): 작고 빠름, 많은 수 필요, 자동화 필수</li>
+          <li><b>상층</b>(E2E): 복잡하고 느림, 적은 수로 충분</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📊 테스팅 사분면 (4가지)</div>
+        <table class="compare-table">
+          <tr><th>사분면</th><th>특성</th><th>테스트 유형</th></tr>
+          <tr><td><b>Q1</b></td><td>기술, 팀 지원</td><td>컴포넌트/통합 테스트 (자동화)</td></tr>
+          <tr><td><b>Q2</b></td><td>비즈니스, 팀 지원</td><td>기능 테스팅, 스토리 테스팅</td></tr>
+          <tr><td><b>Q3</b></td><td>비즈니스, 제품 평가</td><td>탐색적, 사용성, UAT</td></tr>
+          <tr><td><b>Q4</b></td><td>기술, 제품 평가</td><td>스모크, 성능, 보안 테스트</td></tr>
+        </table>
+        <div class="tip-box" style="margin-top:10px">
+          <div class="tip-label">💡 두 축</div>
+          <div class="tip-text">가로축: 비즈니스 측면 ↔ 기술 측면<br>세로축: 팀 지원 ↔ 제품 평가</div>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-day25" onclick="markDone(25)">✅ 학습 완료</button>
+      <a href="quiz.html?day=25" class="quiz-link">📝 Day 25 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 26 -->
+    <div class="day-section" id="day26">
+      <div class="day-header"><div class="day-num">DAY 26</div><div class="day-title">리스크 관리</div></div>
+
+      <div class="card">
+        <div class="card-title">⚠️ 리스크란?</div>
+        <div class="example-box">
+          <div class="example-label">리스크 수준 공식</div>
+          <div class="example-text">리스크 수준 = 발생 가능성 × 영향도</div>
+        </div>
+        <div class="desc" style="margin-top:10px">리스크는 미래에 <b>부정적인 결과를 초래할 수 있는 잠재적 사건</b>입니다.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🏢 프로젝트 리스크 vs 제품 리스크</div>
+        <table class="compare-table">
+          <tr><th>구분</th><th>프로젝트 리스크</th><th>제품 리스크</th></tr>
+          <tr><td><b>정의</b></td><td>프로젝트 목표 달성에 영향</td><td>소프트웨어 품질에 영향</td></tr>
+          <tr><td><b>예시</b></td><td>인력 부족, 납기 지연, 예산 초과, 도구 문제</td><td>누락 기능, 보안 취약점, 성능 문제</td></tr>
+          <tr><td><b>발생 시</b></td><td>일정·예산·범위에 영향</td><td>사용자·비즈니스에 피해</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔍 제품 리스크 분석 2단계</div>
+        <div class="number-list">
+          <div class="number-item">
+            <div class="number-circle">1</div>
+            <div class="number-text"><b>리스크 식별</b> — 어떤 리스크가 있는가?<br><span style="font-size:12px;color:#64748b">브레인스토밍, 이전 프로젝트 교훈, 전문가 인터뷰 등</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">2</div>
+            <div class="number-text"><b>리스크 평가</b> — 얼마나 심각한가?<br><span style="font-size:12px;color:#64748b">발생 가능성 × 영향도 = 리스크 수준 계산</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🛡️ 제품 리스크 제어</div>
+        <div class="number-list">
+          <div class="number-item">
+            <div class="number-circle">1</div>
+            <div class="number-text"><b>리스크 완화 (Mitigation)</b><br><span style="font-size:12px;color:#64748b">리스크 평가 때 제안된 조치를 실행하여 리스크 수준을 낮춤</span></div>
+          </div>
+          <div class="number-item">
+            <div class="number-circle">2</div>
+            <div class="number-text"><b>리스크 모니터링</b><br><span style="font-size:12px;color:#64748b">리스크 수준 변화를 지속적으로 추적</span></div>
+          </div>
+        </div>
+        <div class="tip-box" style="margin-top:10px">
+          <div class="tip-label">💡 리스크 기반 테스팅</div>
+          <div class="tip-text">리스크 분석 결과를 바탕으로 테스트 범위, 우선순위, 기법을 결정합니다. 리스크가 높은 영역을 먼저, 더 많이 테스트합니다.</div>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-day26" onclick="markDone(26)">✅ 학습 완료</button>
+      <a href="quiz.html?day=26" class="quiz-link">📝 Day 26 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 27 -->
+    <div class="day-section" id="day27">
+      <div class="day-header"><div class="day-num">DAY 27</div><div class="day-title">테스트 모니터링·제어·완료</div></div>
+
+      <div class="card">
+        <div class="card-title">📊 모니터링 vs 제어</div>
+        <table class="compare-table">
+          <tr><th>구분</th><th>모니터링</th><th>제어</th></tr>
+          <tr><td><b>목적</b></td><td>정보 수집·비교</td><td>조치 실행</td></tr>
+          <tr><td><b>활동</b></td><td>진행 상황 추적, 메트릭 수집</td><td>우선순위 변경, 자원 추가</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📈 테스트 메트릭 종류</div>
+        <ul class="point-list">
+          <li><b>프로젝트 진행</b> — 완료된 작업, 자원 사용, 노력</li>
+          <li><b>테스트 진행</b> — 실행/미실행 테스트 케이스 수</li>
+          <li><b>제품 품질</b> — 가용성, 응답 시간 등</li>
+          <li><b>결함</b> — 발견/수정 결함 수, 결함 밀도</li>
+          <li><b>리스크</b> — 잔존 리스크 수준</li>
+          <li><b>커버리지</b> — 요구사항, 코드 커버리지</li>
+          <li><b>비용</b> — 테스팅 비용 대비 효과</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📝 진행 보고서 vs 완료 보고서</div>
+        <table class="compare-table">
+          <tr><th>구분</th><th>진행 보고서</th><th>완료 보고서</th></tr>
+          <tr><td><b>시점</b></td><td>정기적으로 (매일/매주)</td><td>테스트 레벨/릴리스 완료 시</td></tr>
+          <tr><td><b>내용</b></td><td>현재 진행 상황, 계획 대비 실적</td><td>전체 요약, 교훈, 잔존 리스크</td></tr>
+        </table>
+        <div class="warn-box" style="margin-top:10px">
+          <div class="warn-label">⚠️ 완료 보고서에 포함되면 안 되는 것</div>
+          <div class="warn-text">다음 반복 주기의 상세 테스트 케이스 목록은 완료 보고서 내용이 아닙니다!</div>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-day27" onclick="markDone(27)">✅ 학습 완료</button>
+      <a href="quiz.html?day=27" class="quiz-link">📝 Day 27 퀴즈 풀기</a>
+    </div>
+
+    <!-- DAY 28 -->
+    <div class="day-section" id="day28">
+      <div class="day-header"><div class="day-num">DAY 28</div><div class="day-title">형상 관리와 결함 관리</div></div>
+
+      <div class="card">
+        <div class="card-title">🗃️ 형상 관리 (Configuration Management)</div>
+        <div class="desc">모든 테스트 산출물에 <b>고유 식별자를 부여</b>하고 버전을 관리하여 일관성과 추적성을 유지하는 것입니다.</div>
+        <div class="section" style="margin-top:12px">
+          <div class="section-name">베이스라인 (Baseline)</div>
+          <div class="desc">형상 항목이 <b>테스팅용으로 승인된 상태</b>를 의미합니다. 베이스라인 이후 변경은 공식적인 변경 제어 프로세스를 따릅니다.</div>
+          <div class="tip-box" style="margin-top:8px">
+            <div class="tip-label">💡 베이스라인의 이점</div>
+            <div class="tip-text">이전 베이스라인으로 되돌리면 <b>이전 테스트 결과를 재현</b>할 수 있습니다.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🐛 결함 관리 프로세스</div>
+        <div class="number-list">
+          <div class="number-item"><div class="number-circle">1</div><div class="number-text"><b>결함 식별 및 기록</b></div></div>
+          <div class="number-item"><div class="number-circle">2</div><div class="number-text"><b>결함 분류 및 우선순위 지정</b></div></div>
+          <div class="number-item"><div class="number-circle">3</div><div class="number-text"><b>적절한 대응책 결정</b> (수정/연기/거부)</div></div>
+          <div class="number-item"><div class="number-circle">4</div><div class="number-text"><b>결함 수정 및 확인 테스팅</b></div></div>
+          <div class="number-item"><div class="number-circle">5</div><div class="number-text"><b>결함 보고 종료</b></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📄 결함 보고서 필수 내용</div>
+        <ul class="point-list">
+          <li><b>고유 식별자</b>와 제목</li>
+          <li>날짜, 작성자, 테스트 환경</li>
+          <li>결함 재현 절차 (단계별)</li>
+          <li><b>기대 결과 vs 실제 결과</b></li>
+          <li>심각도(Severity)와 수정 우선순위(Priority)</li>
+          <li>현재 상태 (신규/분석 중/수정됨/재오픈 등)</li>
+        </ul>
+        <div class="warn-box" style="margin-top:10px">
+          <div class="warn-label">⚠️ 주의</div>
+          <div class="warn-text">결함을 수정한 개발자 이름은 필수 포함 사항이 아닙니다!</div>
+        </div>
+        <div class="tip-box" style="margin-top:8px">
+          <div class="tip-label">💡 이상 사항 vs 결함</div>
+          <div class="tip-text">보고된 이상 사항이 반드시 결함은 아닙니다. 거짓-양성(False Positive)이거나 변경 요청일 수도 있습니다.</div>
+        </div>
+      </div>
+
+      <button class="complete-btn" id="btn-day28" onclick="markDone(28)">✅ 학습 완료</button>
+      <a href="quiz.html?day=28" class="quiz-link">📝 Day 28 퀴즈 풀기</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const DAYS = [23,24,25,26,27,28];
+  const progress = JSON.parse(localStorage.getItem('istqb_progress') || '{}');
+  const nav = document.getElementById('dayNav');
+  DAYS.forEach(d => {
+    const btn = document.createElement('button');
+    btn.className = 'day-btn' + (d === 23 ? ' active' : '') + (progress[d]?.studied ? ' done' : '');
+    btn.textContent = `Day ${d}`;
+    btn.onclick = () => switchDay(d);
+    btn.id = `nav-day${d}`;
+    nav.appendChild(btn);
+  });
+  function switchDay(d) {
+    DAYS.forEach(i => { document.getElementById(`day${i}`).classList.remove('show'); document.getElementById(`nav-day${i}`).classList.remove('active'); });
+    document.getElementById(`day${d}`).classList.add('show');
+    document.getElementById(`nav-day${d}`).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  function markDone(d) {
+    const p = JSON.parse(localStorage.getItem('istqb_progress') || '{}');
+    p[d] = { ...(p[d] || {}), studied: true };
+    localStorage.setItem('istqb_progress', JSON.stringify(p));
+    const btn = document.getElementById(`btn-day${d}`);
+    btn.textContent = '✅ 완료됨!'; btn.classList.add('done');
+    document.getElementById(`nav-day${d}`)?.classList.add('done');
+    if (d < 28) setTimeout(() => switchDay(d + 1), 600);
+  }
+  DAYS.forEach(d => { if (progress[d]?.studied) { const btn = document.getElementById(`btn-day${d}`); if (btn) { btn.textContent = '✅ 완료됨!'; btn.classList.add('done'); } } });
+  const params = new URLSearchParams(location.search);
+  const startDay = parseInt(params.get('day'));
+  if (startDay && DAYS.includes(startDay)) switchDay(startDay);
+</script>
+</body>
+</html>
