@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISTQB CTFL 4.0 샘플 문제 D</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #252838;
+    --border: #2e3247;
+    --accent: #6c8cff;
+    --accent2: #a78bfa;
+    --green: #34d399;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --text: #e2e8f0;
+    --muted: #8892a4;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px 60px;
+  }
+
+  .header {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 0 12px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .header-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: .08em;
+    font-weight: 700;
+  }
+  .score-badge {
+    display: flex;
+    gap: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+  .score-badge span { color: var(--muted); }
+  .score-badge .ok { color: var(--green); }
+  .score-badge .ng { color: var(--red); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 26px;
+    width: 100%;
+    max-width: 720px;
+    margin-bottom: 14px;
+  }
+
+  .progress-wrap {
+    width: 100%;
+    max-width: 720px;
+    margin-bottom: 20px;
+  }
+  .progress-bar-bg {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .q-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .q-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .q-lo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 8px;
+    color: var(--accent);
+  }
+  .q-multi-tag {
+    font-size: 11px;
+    background: #2a2040;
+    border: 1px solid var(--accent2);
+    border-radius: 6px;
+    padding: 2px 8px;
+    color: var(--accent2);
+  }
+
+  .q-note {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+
+  .question-text {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.75;
+    color: var(--text);
+    margin-bottom: 22px;
+  }
+
+  .opts { display: flex; flex-direction: column; gap: 10px; }
+  .opt-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 16px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    line-height: 1.6;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .opt-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: #1e2235;
+  }
+  .opt-btn.selected {
+    border-color: var(--accent2);
+    background: #1e1a30;
+  }
+  .opt-btn.correct {
+    border-color: var(--green);
+    background: #0d2620;
+    color: var(--green);
+  }
+  .opt-btn.wrong {
+    border-color: var(--red);
+    background: #2a1010;
+    color: var(--red);
+  }
+  .opt-btn.reveal {
+    border-color: var(--green);
+    background: #0d2620;
+    color: var(--green);
+  }
+  .opt-btn:disabled { cursor: default; }
+
+  .explanation {
+    display: none;
+    margin-top: 18px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  .explanation.show { display: block; }
+  .explanation .result-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .result-label.ok { color: var(--green); }
+  .result-label.ng { color: var(--red); }
+
+  .nav-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: flex-end;
+  }
+  .btn-check, .btn-next {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 8px;
+    padding: 10px 22px;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s;
+  }
+  .btn-check {
+    background: var(--accent);
+    color: #fff;
+    display: none;
+  }
+  .btn-next {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    display: none;
+  }
+  .btn-check:hover, .btn-next:hover { opacity: 0.85; }
+
+  /* 결과 화면 */
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 40px 28px;
+    width: 100%;
+    max-width: 720px;
+    text-align: center;
+  }
+  .result-score-big {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .result-sub { font-size: 15px; color: var(--muted); margin-bottom: 16px; }
+  .result-grade {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 24px;
+  }
+  .result-detail {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+  .wrong-section {
+    text-align: left;
+    margin-top: 28px;
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+  }
+  .wrong-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--red);
+    margin-bottom: 14px;
+    letter-spacing: 0.06em;
+  }
+  .wrong-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--red);
+    border-radius: 0 10px 10px 0;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .wrong-q { font-size: 13px; color: var(--text); line-height: 1.6; margin-bottom: 6px; }
+  .wrong-ans {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--green);
+    margin-bottom: 4px;
+  }
+  .wrong-exp { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .btn-restart {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+  .btn-retry-wrong {
+    background: var(--surface2);
+    border: 1px solid var(--red);
+    color: var(--red);
+    border-radius: 10px;
+    padding: 12px 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .btn-restart:hover, .btn-retry-wrong:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-title">ISTQB · CTFL 4.0 · SAMPLE D</span>
+  <div class="score-badge">
+    <span class="ok">✓ <span id="ok-cnt">0</span></span>
+    <span class="ng">✗ <span id="ng-cnt">0</span></span>
+    <span><span id="left-cnt">40</span> left</span>
+  </div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-label">
+    <span id="prog-label">1 / 40</span>
+    <span id="prog-pct">0%</span>
+  </div>
+  <div class="progress-bar-bg"><div class="progress-bar" id="prog-bar" style="width:0%"></div></div>
+</div>
+
+<div id="quiz-view">
+  <div class="card">
+    <div class="q-meta">
+      <span class="q-num" id="q-num">Q1</span>
+      <span class="q-lo" id="q-lo">FL-1.1.1</span>
+      <span class="q-multi-tag" id="q-multi-tag" style="display:none">두 개 선택</span>
+    </div>
+    <div class="q-note" id="q-note" style="display:none"></div>
+    <div class="question-text" id="q-text"></div>
+    <div class="opts" id="opts"></div>
+    <div class="explanation" id="explanation">
+      <div class="result-label" id="result-label"></div>
+      <div id="exp-text"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-check" id="btn-check" onclick="checkAns()">정답 확인</button>
+      <button class="btn-next" id="btn-next" onclick="nextQ()">다음 문제 →</button>
+    </div>
+  </div>
+</div>
+
+<div id="result-view" style="display:none">
+  <div class="result-card">
+    <div class="result-score-big" id="res-score">0</div>
+    <div class="result-sub">점 / 40점</div>
+    <div class="result-grade" id="res-grade"></div>
+    <div class="result-detail" id="res-detail"></div>
+    <button class="btn-restart" onclick="restart()">전체 다시 풀기</button>
+    <button class="btn-retry-wrong" id="btn-retry-wrong" onclick="retryWrong()">오답만 다시 풀기</button>
+    <div class="wrong-section" id="wrong-section"></div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {id:1, lo:"FL-1.1.1", q:"다음 중 테스트의 일반적인 목적으로 맞는 것은?", opts:["테스트 대상의 결함 식별 및 수정","개발자와 효과적인 커뮤니케이션 유지","법적 요구사항 충족을 확인하는 벨리데이션","테스트 대상의 품질에 대한 자신감 확보"], ans:[3], exp:"결함 수정은 테스팅 활동이 아닙니다. 법적 요구사항 확인은 베리피케이션의 한 형태입니다. 테스트 대상의 품질에 대한 신뢰 구축은 합격한 테스트를 실행함으로써 달성됩니다."},
+  {id:2, lo:"FL-1.2.3", note:"장애인 사용자를 고려하지 않은 UI, 시간 압박으로 예외 처리 누락, 배포 후 벌금 부과, 보너스 계산 부정확성은 아직 미발견", q:"다음 중 올바른 설명은?", opts:["보너스 계산 오류는 가끔 발생하는 결함(defect)이다","일부 장애인 사용자에 대처하지 못해 받은 벌금은 장애(failure)이다","엄청난 시간적 압박 속에서 일하는 프로그래머는 근본 원인(root cause)이다","사용자 인터페이스 설계에 설계자 오류(error)가 포함되어 있다"], ans:[2], exp:"오류는 프로그래머에 의해 발생했으며, 시간 압박이 후속 결함의 근본 원인입니다. 보너스 계산 오류는 결함이 아닌 장애이며, 벌금 자체는 장애가 아닙니다. UI 설계에는 설계자 오류가 아닌 설계 결함이 포함되어 있습니다."},
+  {id:3, lo:"FL-1.3.1", q:"테스트 컨디션은 동일하게 유지되지만 테스트 케이스는 매번 달라진다. 이것이 다루고 있는 '테스팅 원리'는?", opts:["테스트 효과는 줄어든다","결함 부재는 궤변이다","조기 테스팅으로 시간과 비용을 절약할 수 있다","결함은 집중된다"], ans:[0], exp:"동일한 테스트 반복 시 새로운 결함을 찾기 어렵다는 '테스트 효과는 줄어든다' 원리입니다. 매번 새로운 테스트를 생성하면 테스트가 소모될 위험이 줄어듭니다."},
+  {id:4, lo:"FL-1.4.1", q:"다음과 같은 업무와 활동을 가장 적절하게 연결한 것은?\n[1.테스트 컨디션→TC 도출 / 2.재사용 테스트웨어 식별 / 3.TC→테스트 절차 구성 / 4.테스트 베이시스/대상 평가]\n[A.분석 / B.설계 / C.구현 / D.완료]", opts:["1B, 2A, 3D, 4C","1B, 2D, 3C, 4A","1C, 2A, 3B, 4D","1C, 2D, 3A, 4B"], ans:[1], exp:"1→B(테스트 설계), 2→D(테스트 완료), 3→C(테스트 구현), 4→A(테스트 분석)"},
+  {id:5, lo:"FL-1.4.3", q:"다음 중 테스트 구현의 결과로 작성되는 테스트웨어를 가장 잘 나타내고 있는 것은?\n[ⅰ.테스트 완료 보고서 / ⅱ.테스트 입력·기대결과 DB / ⅲ.환경 구축 구성요소 목록 / ⅳ.실행순서 TC 시퀀스 / ⅴ.테스트 케이스]", opts:["ii, iv","iii, v","i, ii, v","i, iii, iv"], ans:[0], exp:"테스트 구현 산출물: 테스트 절차(iv), 테스트 데이터(ii). ⅲ,ⅴ는 테스트 설계, ⅰ는 테스트 완료 활동의 산출물입니다."},
+  {id:6, lo:"FL-1.4.5", q:"다음 중 테스트 관리 역할을 맡은 사람이 수행하는 작업을 가장 적절하게 설명하는 것은?", opts:["테스트 베이시스와 테스트 대상 평가","테스트 환경 요구사항 정의","테스트 대상의 테스트 용이성 평가","테스트 완료 보고서 작성"], ans:[3], exp:"테스트 관리 역할은 계획, 모니터링, 제어, 완료와 관련됩니다. 나머지는 테스팅(기술) 역할의 업무입니다."},
+  {id:7, lo:"FL-1.5.2", q:"다음 중 전체 팀 접근법의 장점인 것은?", opts:["팀원 간 의사소통 개선","개인의 품질에 대한 책임감 감소","최종 사용자에게 결과물을 더 빠르게 배포","외부 비즈니스 사용자와의 협업 감소"], ans:[0], exp:"전체 팀 접근법은 팀원 간 활발한 의사소통과 협업을 장려합니다. 개별 팀원은 여전히 품질에 대해 동등한 책임을 집니다."},
+  {id:8, lo:"FL-1.5.3", q:"다음 테스팅 독립성 장/단점 중 장점에 해당하는 것은?\n[ⅰ.테스터-개발자 다른 장소 / ⅱ.개발자의 가정에 의문 제기 / ⅲ.대립적 관계 형성 / ⅳ.개발자 품질 책임감 감소 / ⅴ.서로 다른 편향 보유]", opts:["i, iv","ii, v","i, iii, iv","ii, iii, v"], ans:[1], exp:"장점: ⅱ(다른 관점), ⅴ(다른 편향). 단점: ⅰ(격리), ⅲ(대립), ⅳ(책임 전가)."},
+  {id:9, lo:"FL-2.1.2", q:"다음 중 모든 소프트웨어 개발 수명주기에 적용할 수 있는 좋은 테스팅 방법은?", opts:["각 테스트 레벨은 구체적이고 명확한 테스트 목적을 가진다","특정 테스트 레벨의 테스트 구현과 실행은 연관된 개발 단계에서 시작한다","테스터는 관련 작업 산출물의 초안이 작성되는 즉시 테스트 설계를 시작한다","모든 동적 테스팅 활동은 상응하는 정적 테스팅 활동을 가진다"], ans:[0], exp:"각 테스트 레벨은 구체적인 목적을 가집니다. 초안이 아닌 합의된 베이시스 기반으로 테스트 설계를 해야 합니다."},
+  {id:10, lo:"FL-2.1.3", q:"다음 중 테스트 우선 개발 접근법(test-first approach)은?", opts:["행위 주도 개발","테스트 레벨 주도 개발","기능 주도 개발","성능 주도 개발"], ans:[0], exp:"행위 주도 개발(BDD)은 테스트 우선 접근법의 대표적 예입니다."},
+  {id:11, lo:"FL-2.1.4", q:"다음 중 데브옵스(DevOps)를 구축할 때 생길 수 있는 문제일 가능성이 가장 높은 것은?", opts:["비기능적 품질 특성을 간과하지 않도록 확인하는 문제","지속적으로 변화하는 테스트 환경을 관리하는 문제","적절한 경험을 갖춘 수동 테스터를 확보하는 문제","배포 파이프라인에 테스트 자동화를 구축하는 문제"], ans:[3], exp:"CI/CD 도구 도입 및 유지보수, 테스트 자동화 수립 및 유지보수가 DevOps 구현의 주요 난제입니다."},
+  {id:12, lo:"FL-2.1.6", q:"다음 중 회고(retrospectives)를 가장 적절하게 설명하고 있는 것은?", opts:["팀원이 품질에 기여하지 않은 다른 팀원을 식별할 수 있다","성공적이었던 활동을 식별해 향후 유지하도록 한다","관리자나 고객에 대한 우려사항을 비난받지 않는 환경에서 표명할 기회이다","다음 반복주기의 계획 및 기술적 결정에 초점을 맞춰 논의하는 자리이다"], ans:[1], exp:"회고는 성공 요소를 식별하고 개선할 영역을 논의합니다. 책임 추궁이나 다음 계획 수립의 장이 아닙니다."},
+  {id:13, lo:"FL-2.2.2", q:"다음 중 기능 테스팅에서 수행할 가능성이 가장 높은 테스트는?", opts:["정렬 기능이 목록 및 배열의 개별 요소를 오름차순으로 정렬하는지 확인하는 테스트","정렬 기능이 시작 후 1초 이내로 완료되는지 확인하는 테스트","정렬 기능을 오름차순에서 내림차순으로 바꾸는 것이 얼마나 용이한지 확인하는 테스트","32비트에서 64비트 환경으로 이동해도 정렬 기능이 올바르게 동작하는지 확인하는 테스트"], ans:[0], exp:"기능적 정확성 확인이 기능 테스팅입니다. 나머지는 성능, 유지보수성, 이식성 등 비기능 테스팅입니다."},
+  {id:14, lo:"FL-2.3.1", q:"다음 중 환전 시스템의 유지보수 테스팅을 유발하는 요인이 될 가능성이 가장 큰 것은?", opts:["개발자가 환전 시스템을 바꾸기 어렵다고 보고했고 테스터는 이것이 사실인지 확인하기로 했다","환전 시스템의 환불 기능이 고객에게 정확한 금액을 지급하지 않는 경우가 있어 제거했다","애자일 팀이 환전 시스템에 새로운 고객 포인트 기능을 추가하는 사용자 스토리의 개발을 시작했다","환전 시스템의 통화 거래 기능이 영어와 현지 언어 모두 지원하도록 재구성되었다"], ans:[1], exp:"시스템 수정(기능 제거)은 유지보수 테스팅의 계기입니다. 새 기능 추가는 일반 테스팅 + 리그레션을 유발하며, 유지보수 테스팅이 아닙니다."},
+  {id:15, lo:"FL-3.1.1", q:"다음 중 정적 테스팅의 대상이 아닌 것은?", opts:["계약서","테스트 계획서","암호화된 코드","테스트 차터"], ans:[2], exp:"암호화된 코드는 사람이 해석하기 너무 복잡하고 도구로 분석하면 안 됩니다. 나머지는 리뷰 가능한 작업 산출물입니다."},
+  {id:16, lo:"FL-3.1.2", q:"다음 중 정적 테스팅의 가치에 대한 설명으로 올바른 것은?", opts:["정적 테스팅으로 식별할 수 있는 결함 유형은 동적 테스팅으로 찾을 수 있는 결함 유형과 다르다","동적 테스팅은 정적 테스팅으로 식별할 수 있는 결함과 일부 추가 결함 유형을 식별할 수 있다","동적 테스팅은 정적 테스팅으로 식별할 수 있는 일부 결함을 식별할 수 있지만 모든 결함을 식별할 수는 없다","정적 테스팅은 동적 테스팅으로 식별할 수 있는 결함 유형뿐 아니라 몇 가지 추가적인 결함 유형도 식별할 수 있다"], ans:[2], exp:"정적으로만 식별 가능한 결함, 양쪽 모두 가능한 결함, 동적으로만 탐지 가능한 결함(성능, 메모리 등)이 각각 존재합니다."},
+  {id:17, lo:"FL-3.2.2", q:"다음 중 리뷰 프로세스에 따라 활동을 순서대로 올바르게 나열한 것은?\n[1.감지된 이상현상 논의·결정 / 2.이슈 기록·업데이트 / 3.리뷰어 기법 활용 이상현상 식별 / 4.리뷰 목적·일정 설정 / 5.참가자에게 접근 권한 제공]", opts:["4-3-5-2-1","4-5-3-1-2","5-4-1-3-2","5-4-3-2-1"], ans:[1], exp:"리뷰 프로세스 순서: 계획(4) → 리뷰 착수(5) → 개별 리뷰(3) → 의사소통 및 분석(1) → 수정 및 보고(2)"},
+  {id:18, lo:"FL-3.2.3", q:"리뷰 회의가 효과적으로 진행되고 모든 참석자가 자유롭게 의견을 표현할 수 있도록 하는 책임을 가진 리뷰 프로세스 참가자는?", opts:["관리자","중재자","위원장","리뷰 리더"], ans:[1], exp:"중재자(퍼실리테이터)는 시간 관리, 토론 중재, 안전한 환경 조성 등 회의의 효과적 진행에 책임이 있습니다."},
+  {id:19, lo:"FL-4.1.1", note:"REQ 05-017: 총 구매 비용이 $100 초과 시 5% 할인, 이하 시 할인 없음", q:"이 요구사항을 기반으로 테스트 케이스를 설계하는 데 가장 적합한 테스트 기법은?", opts:["화이트박스 테스트 기법","블랙박스 테스트 기법","경험 기반 테스트 기법","리스크 기반 테스트 기법"], ans:[1], exp:"요구사항(외부 동작) 명세 기반이므로 블랙박스 기법(경계값 분석, 동등분할 등)이 적합합니다. 리스크 기반 테스트는 공인된 기법 유형이 아닙니다."},
+  {id:20, lo:"FL-4.2.1", note:"영화 예매 시스템: D=CY-BY. D<0→오류메시지 / 0≤D<18→학생할인 / 18≤D<65→할인없음 / D≥65→경로할인\n기존 TC: BY=1990,CY=2020(할인없음) / BY=2030,CY=2029(오류)", q:"100% 유효 동등분할 커버리지 달성을 위해 추가해야 하는 테스트 데이터 세트는? (두 개 선택)", opts:["BY=2001, CY=2065","BY=1900, CY=1965","BY=1965, CY=1900","BY=2011, CY=2029","BY=2000, CY=2000"], ans:[1,4], multi:true, exp:"미커버 분할: 학생할인(0≤D<18)과 경로할인(D≥65). b: D=65(경로할인). e: D=0(학생할인). a: D=64(할인없음, 이미 커버). c: D=-65(오류, 이미 커버). d: D=18(할인없음, 이미 커버)."},
+  {id:21, lo:"FL-4.2.2", note:"온도 제어 시스템: 0≤T≤2 → 적정온도, T<0 → 너무 낮음, T>2 → 너무 높음 (정수 단위)", q:"두 개 선택(2-value) 경계값 분석으로 가장 높은 경계값 커버리지를 제공하는 테스트 입력 세트는?", opts:["-1, 3","0, 2","-1, 0, 2, 3","-2, 0, 2, 4"], ans:[2], exp:"2-value BVA: 모든 동등분할의 경계값 커버. 경계값: -1(낮음), 0(적정-하한), 2(적정-상한), 3(높음). 4개 모두 커버하는 c가 정답."},
+  {id:22, lo:"FL-4.2.3", note:"결정 테이블(R1~R7). TC1=R2 커버, TC2=R3 커버, TC3=R7 커버, TC4=R6 커버\n[R1:나이0-18/등록NO=A / R2:나이19-65/경험0-4/등록NO=A / R3:나이19-65/경험>4/등록NO=B / R4:나이>65/등록NO=B / R5:나이0-18/등록YES=B / R6:나이19-65/등록YES=D / R7:나이>65/등록YES=C]", q:"기존 테스트 케이스 세트에 추가하면 결정 테이블 커버리지를 증가시킬 테스트 케이스는?", opts:["66세, 경험 없는 미등록 남성; 기대 결과: 분류 B","55세, 2년 경력의 미등록 여성; 기대 결과: 분류 A","19세, 5년 경력의 등록 여성; 기대 결과: 분류 D","이미 달성된 결정 테이블 커버리지를 추가로 높일 수 있는 테스트 케이스는 없다"], ans:[0], exp:"a는 R4(나이>65, 미등록)에 해당 → 미커버 규칙 커버. b는 R2(이미 TC1), c는 R6(이미 TC4). 미커버 규칙: R1, R4, R5."},
+  {id:23, lo:"FL-4.2.4", note:"호텔 예약 상태전이: S1→S2(예약가능), S1→S3(예약불가), S2→S1(객실변경), S2→S4(취소), S2→S4(결제), S3→S2(예약가능), S3→S4(취소). 모든 TC는 S1 시작.", q:"가장 높은 유효 전이 커버리지를 달성하는 것은?", opts:["예약불가, 예약가능, 객실변경, 예약불가, 취소","예약가능, 객실변경, 예약불가, 예약가능, 결제","예약가능, 객실변경, 예약가능, 객실변경, 예약불가","예약불가, 취소, 객실변경, 예약가능, 결제"], ans:[1], exp:"b는 5개의 서로 다른 전이를 커버합니다(첫 Available: S1→S2, 두 번째 Available: S3→S2). 7개 중 5개 커버로 가장 높습니다."},
+  {id:24, lo:"FL-4.3.1", q:"프로그램 P에 대한 테스트 스위트 S는 100% 구문 커버리지를 달성한다. 이 스위트는 세 개의 TC로 구성되고 각 TC는 50% 구문 커버리지를 달성한다. 올바른 설명은?", opts:["S를 실행하면 P에서 나타날 수 있는 모든 장애가 발생하게 된다","S는 P에 대해 100% 분기 커버리지를 달성한다","결함이 있는 P의 모든 실행문은 S 실행 중 최소 한번은 실행된다","S에서 하나의 TC를 제외시켜도 나머지 두 TC로 여전히 100% 구문 커버리지를 달성하게 된다"], ans:[2], exp:"100% 구문 커버리지 = 각 실행 가능한 구문이 최소 1회 실행됨. 구문 커버리지가 분기 커버리지를 보장하지는 않습니다."},
+  {id:25, lo:"FL-4.3.3", q:"소프트웨어 명세가 모호하고 오래되었거나 불완전한 경우에도 화이트박스 테스팅으로 결함 식별이 가능한 이유는?", opts:["테스트 케이스가 명세가 아닌 테스트 대상의 구조를 기반으로 설계되기 때문","어떤 화이트박스 테스트 기법을 사용하더라도 커버리지를 명확하게 정의하고 쉽게 측정할 수 있기 때문","화이트박스 테스트 기법은 요구사항 누락을 식별하기 매우 좋게 설계돼 있기 때문","화이트박스 테스트 기법은 정적 테스팅과 동적 테스팅 모두에 사용할 수 있기 때문"], ans:[0], exp:"화이트박스 테스팅은 소프트웨어 구현 전체를 고려하므로, 명세가 불완전해도 코드에 추가되었지만 있어서는 안 되는 결함을 찾을 수 있습니다."},
+  {id:26, lo:"FL-4.4.1", q:"다음 중 오류 추정을 적용할 때 테스터가 예상할 수 없는 것은?", opts:["개발자가 이자 계산 사용자 스토리에 있는 공식을 잘못 이해한다","개발자가 소스코드에 \"FA=A*(1+IR)^N\" 대신 \"FA=A*(1+IR^N)\"라고 작성한다","개발자가 새로운 복리 이율 법안에 관한 세미나를 놓친다","시스템이 계산하는 이자의 정확성이 충분하지 않다"], ans:[2], exp:"세미나를 놓친 것은 결함의 잠재적 근본 원인으로, 오류·결함·장애 어느 것도 아니며 테스터가 예측하기 어렵습니다."},
+  {id:27, lo:"FL-4.4.2", q:"다음 중 탐색적 테스팅에 대한 설명으로 옳은 것은?", opts:["탐색적 테스팅 세션을 시작하기 전에 테스트 케이스를 설계한다","테스터는 테스트 실행은 할 수 있지만 테스트 설계는 할 수 없다","탐색적 테스팅의 결과는 잔존 결함 수를 예측하는 좋은 지표가 된다","탐색적 테스팅 중에 테스터는 블랙박스 테스트 기법을 사용할 수 있다"], ans:[3], exp:"탐색적 테스팅에서 테스터는 유용하다고 생각하는 모든 테스트 기법을 사용할 수 있습니다."},
+  {id:28, lo:"FL-4.5.1", q:"다음 중 팀이 전달해야 하는 내용에 대한 공통된 이해를 달성할 협업 사용자 스토리 작성 방법은?", opts:["팀의 사용자 스토리 구현에 필요한 노력에 합의를 도출하는 플래닝 포커","팀이 사용자 스토리에서 불일치와 모순을 식별할 수 있게 해주는 리뷰","최상의 비즈니스 가치를 가진 사용자 스토리의 구현에 우선순위를 주는 반복주기 계획","팀 멤버들이 소프트웨어가 사용될 방법을 이해할 수 있게 해주는 대화"], ans:[3], exp:"대화(Conversation)는 소프트웨어가 어떻게 사용될지 설명하고, 인수 조건 정의를 가능하게 해 공유된 비전을 얻게 합니다."},
+  {id:29, lo:"FL-4.5.3", note:"사용자 스토리: 가격 범위 필터 기능. AC1:버전3.0+ / AC2:최소·최대가격 설정 / AC3:동적 업데이트. 사전조건: 제품A=$100, 제품B=$110", q:"이 사용자 스토리에 대한 테스트 케이스로 가장 적절한 것은?", opts:["$90-$100 필터 → A만 표시, 최대 $110 변경 → A·B 모두 표시","접속 시 디폴트 최소$100/최대$110 확인, 제품C($120) 추가 후 디폴트 최대가 $120으로 변경","$90-$115 필터 → A·B 표시, USD→EUR 변경 시 환율 적용 확인","엣지/크롬/오페라 3브라우저에서 $90-$110 필터 → A·B 표시 및 레이아웃 동일"], ans:[0], exp:"a는 AC2(가격 설정)와 AC3(동적 업데이트)를 검증합니다. b·c·d는 해당 사용자 스토리의 인수 조건과 무관합니다."},
+  {id:30, lo:"FL-5.1.3", q:"다음 중 테스트 프로젝트의 완료 조건으로 가장 적절한 것은? (두 개 선택)", opts:["예산이 승인된다","예산이 소진된다","테스트 베이시스가 가용하다","테스트 케이스로 최소 80%의 구문 커버리지를 달성했다","모든 테스트 분석가가 ISTQB Foundation Level 자격 취득자이다"], ans:[1,3], multi:true, exp:"b(예산 소진)와 d(커버리지 달성)가 완료 기준. a(예산 승인)·c(베이시스 가용성)·e(자격 요건)는 착수 기준의 예입니다."},
+  {id:31, lo:"FL-5.1.4", q:"낙관적 추정치:1시간 / 비관적:8시간 / 가장 가능성 높음:3시간. 3점 추정 기법으로 4개 TC 실행에 필요한 총 시간은?", opts:["14시간","3.5시간","16시간","12시간"], ans:[0], exp:"E=(a+4m+b)/6=(1+12+8)/6=3.5시간. 4개 TC: 3.5×4=14시간"},
+  {id:32, lo:"FL-5.1.5", note:"추적성 행렬: TC1(Req1,3,4,7) / TC2(Req1,5,7) / TC3(Req5,6) / TC4(Req2). 커버리지 기반 우선순위 지정, 4개 TC 모두 실행", q:"마지막으로 실행해야 하는 테스트 케이스는?", opts:["TC1","TC2","TC3","TC4"], ans:[1], exp:"순서: TC1(4개 커버) → TC3(Req5,6) → TC4(Req2) → TC2(마지막). TC2는 이미 커버된 요구사항만 다룹니다."},
+  {id:33, lo:"FL-5.1.7", q:"테스팅 사분면(testing quadrants)은 테스팅에 어떻게 도움이 될 수 있는가?", opts:["네 가지 기본 테스트 레벨에 따라 테스트 프로세스를 나누어 계획하는 데 도움","하위 커버리지 기반으로 상위 커버리지를 평가하는 데 도움","기술적 배경이 부족한 이해관계자가 다양한 테스트 유형을 이해하는 데 도움","애자일 팀이 심리 유형으로 사람들을 분류해 커뮤니케이션 전략을 개발하는 데 도움"], ans:[2], exp:"테스팅 사분면은 이해관계자가 테스트 유형, 지원 활동(팀 지원 vs 제품 평가), 관점(비즈니스 vs 기술) 간의 관계를 이해하도록 돕습니다."},
+  {id:34, lo:"FL-5.2.1", q:"리스크 수준이 $1,000이고 리스크 발생 가능성이 50%로 추정된다면, 리스크 영향도로 적절한 것은?", opts:["$500","$2,000","$50,000","$200"], ans:[1], exp:"리스크 수준 = 발생 가능성 × 영향도. 영향도 = $1,000 / 0.5 = $2,000"},
+  {id:35, lo:"FL-5.2.2", q:"다음 중 제품 리스크인 것은? (두 개 선택)", opts:["개발 범위 증가","낮은 품질의 아키텍처","예산 감소","열악한 도구 지원","너무 긴 응답시간"], ans:[1,4], multi:true, exp:"b(저품질 아키텍처), e(긴 응답시간)은 제품 특성 → 제품 리스크. a(범위증가), c(예산감소), d(도구지원)은 프로젝트 리스크."},
+  {id:36, lo:"FL-5.3.2", q:"다음 중 테스트 보고서의 유효한 목적이 아닌 것은?", opts:["테스트 진행 상황 추적과 추가 노력이 필요한 영역 식별","실행된 테스트와 테스트 결과, 식별된 결함의 정보 제공","재현 절차 등 각 결함에 대한 정보 제공","다음 기간에 예정된 테스트에 대한 정보 제공"], ans:[2], exp:"각 결함에 대한 재현 절차 정보는 결함 보고서의 목적입니다. 테스트 보고서는 전체 테스트 활동을 요약합니다."},
+  {id:37, lo:"FL-5.4.1", q:"버전 번호 기반으로 릴리즈 구성 파일을 재조립하고 개발자가 결함을 수정할 수 있었다. 이 활동이 가능했던 이유로 적절한 것은?", opts:["리스크 관리","테스트 모니터링과 제어","전체 팀 접근법","형상 관리"], ans:[3], exp:"형상 관리는 작업 산출물을 식별, 제어, 추적합니다. 버전별 구성 항목 기록 유지로 이전 베이스라인 복원이 가능합니다."},
+  {id:38, lo:"FL-5.5.1", note:"결함 보고서: 도서 반납 시 시스템이 반납 미등록, 대출 상태 유지. 첨부파일 없음, 우선순위 미입력", q:"개발자가 장애를 신속하게 재현하는 데 가장 도움이 되는 것은?", opts:["'설명' 란에 어떤 사용자와 어떤 도서에 영향을 미치는지 정보 추가","'우선순위' 란에 누락된 값을 입력한다","'재현 절차' 각 단계 후 메모리 덤프와 DB 스냅샷을 '첨부파일'에 추가","다양한 환경에서 동일한 TC를 반복 수행하고 각각 개별 결함 보고서 작성"], ans:[0], exp:"동일한 입력 데이터 정보를 추가하면 개발자가 장애를 더 빨리 재현하고 결함을 식별할 수 있습니다."},
+  {id:39, lo:"FL-6.1.1", q:"다음 중 테스트 실행에 가장 도움이 되는 도구의 분류인 것은?\n[ⅰ.협업 도구 / ⅱ.데브옵스 도구 / ⅲ.관리 도구 / ⅳ.비기능 테스팅 도구 / ⅴ.테스트 설계 및 구현 도구]", opts:["i, v","ii, iv","i, iii, v","ii, iii, iv"], ans:[1], exp:"데브옵스 도구(CI/CD)와 비기능 테스팅 도구 모두 테스트 실행을 용이하게 합니다. 나머지는 테스트 실행의 용이성을 포함하지 않습니다."},
+  {id:40, lo:"FL-6.2.1", q:"다음 중 테스트 자동화의 리스크로 가장 적절한 것은?", opts:["심각도가 높은 결함의 추가 식별","사람이 도출하기에 너무 복잡한 지표 제공","개발 플랫폼과의 호환성 부족","테스트 실행 시간의 대폭적인 단축"], ans:[2], exp:"개발 플랫폼과 호환되지 않으면 테스트 자동화 통합이 불가능해집니다. a·b·d는 자동화의 이점에 해당합니다."}
+];
+
+let queue = [], cur = 0, okCnt = 0, ngCnt = 0;
+let selected = [], answered = false;
+let wrongQueue = [];
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function init(idxArr) {
+  queue = shuffle([...idxArr]);
+  cur = 0; okCnt = 0; ngCnt = 0; wrongQueue = [];
+  document.getElementById('quiz-view').style.display = 'block';
+  document.getElementById('result-view').style.display = 'none';
+  render();
+}
+
+function render() {
+  const q = QUESTIONS[queue[cur]];
+  selected = []; answered = false;
+
+  const total = queue.length;
+  const done = cur;
+  const pct = Math.round(done / total * 100);
+  document.getElementById('prog-label').textContent = `${cur + 1} / ${total}`;
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-bar').style.width = pct + '%';
+  document.getElementById('ok-cnt').textContent = okCnt;
+  document.getElementById('ng-cnt').textContent = ngCnt;
+  document.getElementById('left-cnt').textContent = total - done;
+
+  document.getElementById('q-num').textContent = `Q${q.id}`;
+  document.getElementById('q-lo').textContent = q.lo;
+
+  const multiTag = document.getElementById('q-multi-tag');
+  multiTag.style.display = q.multi ? 'inline-block' : 'none';
+
+  const noteEl = document.getElementById('q-note');
+  if (q.note) { noteEl.textContent = q.note; noteEl.style.display = 'block'; }
+  else noteEl.style.display = 'none';
+
+  document.getElementById('q-text').textContent = q.q;
+
+  const optsEl = document.getElementById('opts');
+  optsEl.innerHTML = '';
+  const labels = ['a','b','c','d','e'];
+  q.opts.forEach((o, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = `${labels[i]}. ${o}`;
+    btn.onclick = () => selectOpt(i);
+    optsEl.appendChild(btn);
+  });
+
+  document.getElementById('explanation').className = 'explanation';
+  document.getElementById('btn-check').style.display = 'none';
+  document.getElementById('btn-next').style.display = 'none';
+}
+
+function selectOpt(i) {
+  if (answered) return;
+  const q = QUESTIONS[queue[cur]];
+  const btns = document.querySelectorAll('.opt-btn');
+  if (q.multi) {
+    const idx = selected.indexOf(i);
+    if (idx > -1) { selected.splice(idx, 1); btns[i].classList.remove('selected'); }
+    else { selected.push(i); btns[i].classList.add('selected'); }
+    document.getElementById('btn-check').style.display = selected.length > 0 ? 'inline-block' : 'none';
+  } else {
+    btns.forEach(b => b.classList.remove('selected'));
+    btns[i].classList.add('selected');
+    selected = [i];
+    document.getElementById('btn-check').style.display = 'inline-block';
+  }
+}
+
+function arrEq(a, b) {
+  return a.length === b.length && [...a].sort().every((v, i) => v === [...b].sort()[i]);
+}
+
+function checkAns() {
+  if (answered || selected.length === 0) return;
+  answered = true;
+  const q = QUESTIONS[queue[cur]];
+  const correct = arrEq(selected, q.ans);
+  if (correct) okCnt++; else { ngCnt++; wrongQueue.push(queue[cur]); }
+
+  const btns = document.querySelectorAll('.opt-btn');
+  btns.forEach(b => b.disabled = true);
+
+  selected.forEach(i => {
+    btns[i].classList.remove('selected');
+    btns[i].classList.add(q.ans.includes(i) ? 'correct' : 'wrong');
+  });
+  q.ans.forEach(i => {
+    if (!selected.includes(i)) btns[i].classList.add('reveal');
+  });
+
+  const expEl = document.getElementById('explanation');
+  const lbl = document.getElementById('result-label');
+  lbl.className = 'result-label ' + (correct ? 'ok' : 'ng');
+  lbl.textContent = correct ? '✓ 정답' : '✗ 오답';
+  document.getElementById('exp-text').textContent = q.exp;
+  expEl.className = 'explanation show';
+
+  document.getElementById('btn-check').style.display = 'none';
+  document.getElementById('btn-next').style.display = 'inline-block';
+
+  document.getElementById('ok-cnt').textContent = okCnt;
+  document.getElementById('ng-cnt').textContent = ngCnt;
+}
+
+function nextQ() {
+  cur++;
+  if (cur >= queue.length) showResult();
+  else render();
+}
+
+function showResult() {
+  document.getElementById('quiz-view').style.display = 'none';
+  document.getElementById('result-view').style.display = 'block';
+
+  const total = queue.length;
+  const pct = Math.round(okCnt / total * 100);
+  document.getElementById('res-score').textContent = okCnt;
+  document.getElementById('res-grade').textContent = pct >= 65 ? '🎉 합격권 달성! (' + pct + '%)' : '아직 조금 더! (' + pct + '%)';
+  document.getElementById('res-detail').textContent = `정답 ${okCnt} / 오답 ${ngCnt} / 전체 ${total}`;
+
+  const wrongSection = document.getElementById('wrong-section');
+  const retryBtn = document.getElementById('btn-retry-wrong');
+
+  if (wrongQueue.length === 0) {
+    wrongSection.innerHTML = '<div class="wrong-title">🎉 전부 정답!</div>';
+    retryBtn.style.display = 'none';
+  } else {
+    const labels = ['a','b','c','d','e'];
+    wrongSection.innerHTML = `<div class="wrong-title">WRONG · ${wrongQueue.length}문제</div>` +
+      wrongQueue.map(qi => {
+        const q = QUESTIONS[qi];
+        const correctAns = q.ans.map(i => labels[i] + ') ' + q.opts[i]).join(', ');
+        return `<div class="wrong-item">
+          <div class="wrong-q">Q${q.id}. ${q.q.substring(0, 80)}${q.q.length > 80 ? '...' : ''}</div>
+          <div class="wrong-ans">✓ 정답: ${correctAns}</div>
+          <div class="wrong-exp">${q.exp}</div>
+        </div>`;
+      }).join('');
+  }
+
+  document.getElementById('ok-cnt').textContent = okCnt;
+  document.getElementById('ng-cnt').textContent = ngCnt;
+  document.getElementById('left-cnt').textContent = 0;
+  document.getElementById('prog-bar').style.width = '100%';
+  document.getElementById('prog-pct').textContent = '100%';
+}
+
+function restart() {
+  init([...Array(QUESTIONS.length).keys()]);
+}
+
+function retryWrong() {
+  if (wrongQueue.length === 0) return;
+  init(wrongQueue);
+}
+
+init([...Array(QUESTIONS.length).keys()]);
+</script>
+</body>
+</html>
