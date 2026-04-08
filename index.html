@@ -7,248 +7,264 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #f1f5f9; font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; }
-    .wrap { max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: 40px; }
+    .wrap { max-width: 480px; margin: 0 auto; padding-bottom: 60px; }
 
-    .header {
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-      padding: 32px 20px 28px; color: #fff;
+    /* 헤더 */
+    .hero {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      padding: 32px 20px 28px;
+      color: #fff;
     }
-    .header-sub { font-size: 12px; font-weight: 600; letter-spacing: 1.5px; opacity: 0.8; margin-bottom: 6px; }
-    .header-title { font-size: 26px; font-weight: 900; margin-bottom: 4px; }
-    .header-desc { font-size: 13px; opacity: 0.75; line-height: 1.5; }
+    .hero-sub { font-size: 12px; font-weight: 700; opacity: .7; margin-bottom: 6px; letter-spacing: .06em; }
+    .hero-title { font-size: 28px; font-weight: 900; margin-bottom: 8px; }
+    .hero-desc { font-size: 13px; opacity: .8; line-height: 1.6; }
 
-    .overall-progress {
-      background: #fff; margin: 16px 12px 0;
-      border-radius: 16px; padding: 16px 18px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-    }
-    .progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .progress-label { font-size: 13px; font-weight: 700; color: #0f172a; }
-    .progress-count { font-size: 13px; color: #6366f1; font-weight: 700; }
-    .bar-wrap { height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
-    .bar { height: 100%; background: linear-gradient(90deg, #6366f1, #8b5cf6); border-radius: 4px; transition: width 0.4s; }
-    .progress-days { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+    /* 진행도 */
+    .section { padding: 12px; }
+    .card { background: #fff; border-radius: 16px; padding: 18px; margin-bottom: 12px; }
+    .card-title { font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .overall-label { display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; margin-bottom: 6px; }
+    .bar-bg { height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; margin-bottom: 14px; }
+    .bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #8b5cf6); border-radius: 3px; transition: width .4s; }
+    .dots { display: flex; flex-wrap: wrap; gap: 6px; }
     .day-dot {
       width: 28px; height: 28px; border-radius: 50%;
-      background: #f1f5f9; border: 2px solid #e2e8f0;
+      background: #f1f5f9; color: #94a3b8;
+      font-size: 10px; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
-      font-size: 9px; font-weight: 700; color: #94a3b8;
+      cursor: default;
     }
-    .day-dot.done { background: #6366f1; border-color: #6366f1; color: #fff; }
+    .day-dot.done { background: #6366f1; color: #fff; }
 
-    .section-title { font-size: 12px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; padding: 20px 16px 8px; }
-
-    .chapter-list { padding: 0 12px; display: flex; flex-direction: column; gap: 10px; }
-    .chapter-card {
-      background: #fff; border-radius: 16px; padding: 18px; cursor: pointer;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-      transition: transform 0.15s, box-shadow 0.15s;
-      text-decoration: none; display: block;
-      border-left: 5px solid var(--col);
+    /* 챕터 카드 */
+    .ch-card {
+      background: #fff; border-radius: 16px; padding: 16px 18px;
+      margin-bottom: 10px; cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: border-color .15s;
+      display: block; text-decoration: none; color: inherit;
     }
-    .chapter-card:active { transform: scale(0.98); }
-    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-    .card-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; background: var(--col-bg); color: var(--col); }
-    .card-days-badge { font-size: 11px; color: #94a3b8; font-weight: 600; }
-    .card-title { font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
-    .card-subtitle { font-size: 12px; color: #64748b; line-height: 1.5; margin-bottom: 12px; }
-    .card-topics { display: flex; gap: 6px; flex-wrap: wrap; }
-    .topic-chip { font-size: 11px; padding: 3px 8px; border-radius: 8px; background: #f8fafc; color: #475569; font-weight: 500; }
-    .card-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f1f5f9; }
-    .card-progress-wrap { flex: 1; margin-right: 12px; }
-    .card-progress-label { font-size: 11px; color: #94a3b8; margin-bottom: 4px; }
-    .card-progress-bar-wrap { height: 4px; background: #f1f5f9; border-radius: 2px; overflow: hidden; }
-    .card-progress-bar { height: 100%; border-radius: 2px; background: var(--col); transition: width 0.3s; }
-    .card-arrow { color: #cbd5e1; font-size: 20px; }
-
-    .quiz-section { padding: 0 12px; margin-top: 4px; }
-    .quiz-banner {
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      border-radius: 16px; padding: 18px 20px;
-      display: flex; justify-content: space-between; align-items: center;
-      cursor: pointer; text-decoration: none;
+    .ch-card:hover { border-color: #6366f1; }
+    .ch-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .ch-badge {
+      font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px;
+      background: #eef2ff; color: #4f46e5;
     }
-    .quiz-banner-label { font-size: 11px; color: #94a3b8; font-weight: 600; letter-spacing: 1px; margin-bottom: 4px; }
-    .quiz-banner-title { font-size: 16px; font-weight: 800; color: #fff; }
-    .quiz-banner-desc { font-size: 12px; color: #64748b; margin-top: 2px; }
-    .quiz-banner-icon { font-size: 32px; }
+    .ch-days { font-size: 11px; color: #94a3b8; }
+    .ch-title { font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+    .ch-desc { font-size: 12px; color: #64748b; line-height: 1.5; margin-bottom: 10px; }
+    .ch-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .tag {
+      font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px;
+      background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0;
+    }
+    .ch-progress { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .ch-prog-label { font-size: 11px; color: #94a3b8; }
+    .ch-bar-bg { height: 4px; background: #f1f5f9; border-radius: 2px; overflow: hidden; }
+    .ch-bar-fill { height: 100%; background: #6366f1; border-radius: 2px; transition: width .4s; }
+
+    /* 퀴즈 버튼 */
+    .quiz-btn-card {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      border-radius: 16px; padding: 20px 18px;
+      margin-bottom: 10px; cursor: pointer;
+      display: block; text-decoration: none;
+      transition: opacity .15s;
+    }
+    .quiz-btn-card:hover { opacity: .9; }
+    .quiz-btn-top { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .quiz-icon { font-size: 20px; }
+    .quiz-label { font-size: 12px; font-weight: 700; color: #94a3b8; }
+    .quiz-title { font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .quiz-desc { font-size: 12px; color: #64748b; }
+
+    /* ── 샘플 문제 섹션 ── */
+    .sample-section-title {
+      font-size: 13px; font-weight: 700; color: #64748b;
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 10px; padding: 0 2px;
+    }
+    .sample-grid { display: flex; flex-direction: column; gap: 10px; }
+    .sample-card {
+      background: linear-gradient(135deg, #1a1d27, #252838);
+      border-radius: 16px; padding: 18px;
+      display: block; text-decoration: none;
+      border: 1px solid #2e3247;
+      transition: border-color .15s, opacity .15s;
+      cursor: pointer;
+    }
+    .sample-card:hover { border-color: #6c8cff; opacity: .95; }
+    .sample-card-top {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+    }
+    .sample-badge {
+      font-family: 'Courier New', monospace;
+      font-size: 11px; font-weight: 700;
+      background: #6c8cff22; color: #6c8cff;
+      border: 1px solid #6c8cff44;
+      border-radius: 6px; padding: 2px 8px;
+    }
+    .sample-count {
+      font-size: 11px; color: #8892a4;
+      font-family: 'Courier New', monospace;
+    }
+    .sample-title { font-size: 15px; font-weight: 800; color: #e2e8f0; margin-bottom: 4px; }
+    .sample-desc { font-size: 12px; color: #64748b; line-height: 1.5; }
+    .sample-arrow {
+      display: flex; align-items: center; justify-content: flex-end;
+      margin-top: 10px;
+      font-size: 12px; color: #6c8cff; font-weight: 700;
+    }
+
+    /* 문제은행 */
+    .bank-card {
+      background: #fff; border-radius: 16px; padding: 16px 18px;
+      margin-bottom: 10px; cursor: pointer;
+      display: block; text-decoration: none; color: inherit;
+      border: 1.5px solid transparent;
+      transition: border-color .15s;
+    }
+    .bank-card:hover { border-color: #6366f1; }
   </style>
 </head>
 <body>
 <div class="wrap">
-
-  <div class="header">
-    <div class="header-sub">ISTQB CTFL 시험 대비</div>
-    <div class="header-title">30일 완성 학습</div>
-    <div class="header-desc">여기서만 공부해도 합격할 수 있도록<br>핵심 개념을 모두 담았어요</div>
+  <div class="hero">
+    <div class="hero-sub">ISTQB CTFL 시험 대비</div>
+    <div class="hero-title">30일 완성 학습</div>
+    <div class="hero-desc">여기서만 공부해도 합격할 수 있도록<br>핵심 개념을 모두 담았어요</div>
   </div>
 
-  <div class="overall-progress">
-    <div class="progress-row">
-      <div class="progress-label">전체 진행도</div>
-      <div class="progress-count" id="overallCount">0 / 30일</div>
+  <div class="section">
+    <!-- 전체 진행도 -->
+    <div class="card">
+      <div class="overall-label">
+        <span>전체 진행도</span>
+        <span id="overallCount">0 / 30일</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" id="overallBar" style="width:0%"></div></div>
+      <div class="dots" id="progressDots"></div>
     </div>
-    <div class="bar-wrap">
-      <div class="bar" id="overallBar" style="width:0%"></div>
+
+    <!-- 챕터별 학습 -->
+    <div class="card-title">📖 챕터별 학습</div>
+
+    <a href="ch1-testing-basics-day1-7.html" class="ch-card">
+      <div class="ch-top"><span class="ch-badge">1장</span><span class="ch-days">Day 1–7</span></div>
+      <div class="ch-title">테스팅의 기초</div>
+      <div class="ch-desc">테스팅이란 무엇인지, 왜 필요한지, 어떻게 수행하는지 기본 개념을 다집니다</div>
+      <div class="ch-tags"><span class="tag">테스팅 정의</span><span class="tag">7가지 원리</span><span class="tag">테스트 프로세스</span><span class="tag">역할과 기술</span></div>
+      <div class="ch-progress"><span class="ch-prog-label" id="ch1-label">0 / 7일 완료</span></div>
+      <div class="ch-bar-bg"><div class="ch-bar-fill" id="ch1-bar" style="width:0%"></div></div>
+    </a>
+
+    <a href="ch2-sdlc-day8-14.html" class="ch-card">
+      <div class="ch-top"><span class="ch-badge">2장</span><span class="ch-days">Day 8–14</span></div>
+      <div class="ch-title">소프트웨어 개발수명주기</div>
+      <div class="ch-desc">SDLC 모델별 테스팅 방법, 테스트 레벨과 유형을 이해합니다</div>
+      <div class="ch-tags"><span class="tag">SDLC 모델</span><span class="tag">TDD/BDD</span><span class="tag">테스트 레벨</span><span class="tag">DevOps</span></div>
+      <div class="ch-progress"><span class="ch-prog-label" id="ch2-label">0 / 7일 완료</span></div>
+      <div class="ch-bar-bg"><div class="ch-bar-fill" id="ch2-bar" style="width:0%"></div></div>
+    </a>
+
+    <a href="ch3-static-testing-day15-17.html" class="ch-card">
+      <div class="ch-top"><span class="ch-badge">3장</span><span class="ch-days">Day 15–17</span></div>
+      <div class="ch-title">정적 테스팅</div>
+      <div class="ch-desc">소프트웨어를 실행하지 않고 결함을 찾는 정적 테스팅과 리뷰 기법을 배웁니다</div>
+      <div class="ch-tags"><span class="tag">정적 분석</span><span class="tag">리뷰 프로세스</span><span class="tag">인스펙션</span><span class="tag">워크쓰루</span></div>
+      <div class="ch-progress"><span class="ch-prog-label" id="ch3-label">0 / 3일 완료</span></div>
+      <div class="ch-bar-bg"><div class="ch-bar-fill" id="ch3-bar" style="width:0%"></div></div>
+    </a>
+
+    <a href="ch4-test-techniques-day18-22.html" class="ch-card">
+      <div class="ch-top"><span class="ch-badge">4장</span><span class="ch-days">Day 18–22</span></div>
+      <div class="ch-title">테스트 기법</div>
+      <div class="ch-desc">블랙박스·화이트박스·경험 기반 기법까지 실제 시험에 가장 많이 나오는 파트입니다</div>
+      <div class="ch-tags"><span class="tag">동등분할</span><span class="tag">경계값 분석</span><span class="tag">결정 테이블</span><span class="tag">구문/분기 커버리지</span></div>
+      <div class="ch-progress"><span class="ch-prog-label" id="ch4-label">0 / 5일 완료</span></div>
+      <div class="ch-bar-bg"><div class="ch-bar-fill" id="ch4-bar" style="width:0%"></div></div>
+    </a>
+
+    <a href="ch5-test-management-day23-28.html" class="ch-card">
+      <div class="ch-top"><span class="ch-badge">5장</span><span class="ch-days">Day 23–28</span></div>
+      <div class="ch-title">테스트 관리</div>
+      <div class="ch-desc">테스트 계획, 리스크 관리, 모니터링, 결함 관리 등 실무에 직결되는 내용입니다</div>
+      <div class="ch-tags"><span class="tag">테스트 계획</span><span class="tag">리스크 관리</span><span class="tag">추정 기법</span><span class="tag">결함 관리</span></div>
+      <div class="ch-progress"><span class="ch-prog-label" id="ch5-label">0 / 6일 완료</span></div>
+      <div class="ch-bar-bg"><div class="ch-bar-fill" id="ch5-bar" style="width:0%"></div></div>
+    </a>
+
+    <a href="ch6-tools-final-day29-30.html" class="ch-card">
+      <div class="ch-top"><span class="ch-badge">6장</span><span class="ch-days">Day 29–30</span></div>
+      <div class="ch-title">테스트 도구 & 최종 복습</div>
+      <div class="ch-desc">테스트 자동화 도구의 종류와 리스크, 그리고 전 범위 최종 정리입니다</div>
+      <div class="ch-tags"><span class="tag">도구 유형</span><span class="tag">자동화 효과</span><span class="tag">자동화 리스크</span><span class="tag">최종 정리</span></div>
+      <div class="ch-progress"><span class="ch-prog-label" id="ch6-label">0 / 2일 완료</span></div>
+      <div class="ch-bar-bg"><div class="ch-bar-fill" id="ch6-bar" style="width:0%"></div></div>
+    </a>
+
+    <!-- 퀴즈 -->
+    <a href="quiz.html" class="quiz-btn-card">
+      <div class="quiz-btn-top">
+        <span class="quiz-icon">✏️</span>
+        <span class="quiz-label">실력 확인 QUIZ</span>
+      </div>
+      <div class="quiz-title">오늘의 퀴즈 풀기</div>
+      <div class="quiz-desc">Day별 퀴즈 + 이전 내용 복습 📝</div>
+    </a>
+
+    <!-- 문제 은행 -->
+    <a href="problem-bank.html" class="bank-card">
+      <div class="ch-top">
+        <span class="ch-badge" style="background:#fef3c7;color:#d97706">📝 문제 은행</span>
+        <span class="ch-days">전체 랜덤</span>
+      </div>
+      <div class="ch-title">전체 문제 모음집</div>
+      <div class="ch-desc">전체 문제를 랜덤으로 풀고 오답 해설까지 한눈에 확인</div>
+    </a>
+
+    <!-- ── 샘플 문제 섹션 ── -->
+    <div class="sample-section-title">🎯 ISTQB 공식 샘플 문제</div>
+    <div class="sample-grid">
+
+      <a href="istqb-sample-a.html" class="sample-card">
+        <div class="sample-card-top">
+          <span class="sample-badge">SAMPLE A</span>
+          <span class="sample-count">40문제</span>
+        </div>
+        <div class="sample-title">샘플문제 A</div>
+        <div class="sample-desc">ISTQB CTFL 4.0 공식 샘플 시험 A · 전 챕터 출제</div>
+        <div class="sample-arrow">풀러 가기 →</div>
+      </a>
+
+      <a href="istqb-sample-c.html" class="sample-card">
+        <div class="sample-card-top">
+          <span class="sample-badge">SAMPLE C</span>
+          <span class="sample-count">40문제</span>
+        </div>
+        <div class="sample-title">샘플문제 C</div>
+        <div class="sample-desc">ISTQB CTFL 4.0 공식 샘플 시험 C · 전 챕터 출제</div>
+        <div class="sample-arrow">풀러 가기 →</div>
+      </a>
+
+      <a href="istqb-sample-d.html" class="sample-card">
+        <div class="sample-card-top">
+          <span class="sample-badge">SAMPLE D</span>
+          <span class="sample-count">40문제</span>
+        </div>
+        <div class="sample-title">샘플문제 D</div>
+        <div class="sample-desc">ISTQB CTFL 4.0 공식 샘플 시험 D · 전 챕터 출제</div>
+        <div class="sample-arrow">풀러 가기 →</div>
+      </a>
+
     </div>
-    <div class="progress-days" id="progressDots"></div>
   </div>
-
-  <div class="section-title">📖 챕터별 학습</div>
-  <div class="chapter-list">
-
-    <a href="ch1-testing-basics-day1-7.html" class="chapter-card" style="--col:#6366f1;--col-bg:#6366f118">
-      <div class="card-top">
-        <span class="card-badge">1장</span>
-        <span class="card-days-badge">Day 1–7</span>
-      </div>
-      <div class="card-title">테스팅의 기초</div>
-      <div class="card-subtitle">테스팅이란 무엇인지, 왜 필요한지, 어떻게 수행하는지 기본 개념을 다집니다</div>
-      <div class="card-topics">
-        <span class="topic-chip">테스팅 정의</span>
-        <span class="topic-chip">7가지 원리</span>
-        <span class="topic-chip">테스트 프로세스</span>
-        <span class="topic-chip">역할과 기술</span>
-      </div>
-      <div class="card-bottom">
-        <div class="card-progress-wrap">
-          <div class="card-progress-label" id="ch1-label">0 / 7일 완료</div>
-          <div class="card-progress-bar-wrap"><div class="card-progress-bar" id="ch1-bar" style="width:0%"></div></div>
-        </div>
-        <span class="card-arrow">›</span>
-      </div>
-    </a>
-
-    <a href="ch2-sdlc-day8-14.html" class="chapter-card" style="--col:#0ea5e9;--col-bg:#0ea5e918">
-      <div class="card-top">
-        <span class="card-badge">2장</span>
-        <span class="card-days-badge">Day 8–14</span>
-      </div>
-      <div class="card-title">소프트웨어 개발수명주기</div>
-      <div class="card-subtitle">SDLC 모델별 테스팅 방법, 테스트 레벨과 유형을 이해합니다</div>
-      <div class="card-topics">
-        <span class="topic-chip">SDLC 모델</span>
-        <span class="topic-chip">TDD/BDD</span>
-        <span class="topic-chip">테스트 레벨</span>
-        <span class="topic-chip">DevOps</span>
-      </div>
-      <div class="card-bottom">
-        <div class="card-progress-wrap">
-          <div class="card-progress-label" id="ch2-label">0 / 7일 완료</div>
-          <div class="card-progress-bar-wrap"><div class="card-progress-bar" id="ch2-bar" style="width:0%"></div></div>
-        </div>
-        <span class="card-arrow">›</span>
-      </div>
-    </a>
-
-    <a href="ch3-static-testing-day15-17.html" class="chapter-card" style="--col:#10b981;--col-bg:#10b98118">
-      <div class="card-top">
-        <span class="card-badge">3장</span>
-        <span class="card-days-badge">Day 15–17</span>
-      </div>
-      <div class="card-title">정적 테스팅</div>
-      <div class="card-subtitle">소프트웨어를 실행하지 않고 결함을 찾는 정적 테스팅과 리뷰 기법을 배웁니다</div>
-      <div class="card-topics">
-        <span class="topic-chip">정적 분석</span>
-        <span class="topic-chip">리뷰 프로세스</span>
-        <span class="topic-chip">인스펙션</span>
-        <span class="topic-chip">워크쓰루</span>
-      </div>
-      <div class="card-bottom">
-        <div class="card-progress-wrap">
-          <div class="card-progress-label" id="ch3-label">0 / 3일 완료</div>
-          <div class="card-progress-bar-wrap"><div class="card-progress-bar" id="ch3-bar" style="width:0%"></div></div>
-        </div>
-        <span class="card-arrow">›</span>
-      </div>
-    </a>
-
-    <a href="ch4-test-techniques-day18-22.html" class="chapter-card" style="--col:#f59e0b;--col-bg:#f59e0b18">
-      <div class="card-top">
-        <span class="card-badge">4장</span>
-        <span class="card-days-badge">Day 18–22</span>
-      </div>
-      <div class="card-title">테스트 기법</div>
-      <div class="card-subtitle">블랙박스·화이트박스·경험 기반 기법까지 실제 시험에 가장 많이 나오는 파트입니다</div>
-      <div class="card-topics">
-        <span class="topic-chip">동등분할</span>
-        <span class="topic-chip">경계값 분석</span>
-        <span class="topic-chip">결정 테이블</span>
-        <span class="topic-chip">구문/분기 커버리지</span>
-      </div>
-      <div class="card-bottom">
-        <div class="card-progress-wrap">
-          <div class="card-progress-label" id="ch4-label">0 / 5일 완료</div>
-          <div class="card-progress-bar-wrap"><div class="card-progress-bar" id="ch4-bar" style="width:0%"></div></div>
-        </div>
-        <span class="card-arrow">›</span>
-      </div>
-    </a>
-
-    <a href="ch5-test-management-day23-28.html" class="chapter-card" style="--col:#ef4444;--col-bg:#ef444418">
-      <div class="card-top">
-        <span class="card-badge">5장</span>
-        <span class="card-days-badge">Day 23–28</span>
-      </div>
-      <div class="card-title">테스트 관리</div>
-      <div class="card-subtitle">테스트 계획, 리스크 관리, 모니터링, 결함 관리 등 실무에 직결되는 내용입니다</div>
-      <div class="card-topics">
-        <span class="topic-chip">테스트 계획</span>
-        <span class="topic-chip">리스크 관리</span>
-        <span class="topic-chip">추정 기법</span>
-        <span class="topic-chip">결함 관리</span>
-      </div>
-      <div class="card-bottom">
-        <div class="card-progress-wrap">
-          <div class="card-progress-label" id="ch5-label">0 / 6일 완료</div>
-          <div class="card-progress-bar-wrap"><div class="card-progress-bar" id="ch5-bar" style="width:0%"></div></div>
-        </div>
-        <span class="card-arrow">›</span>
-      </div>
-    </a>
-
-    <a href="ch6-tools-final-day29-30.html" class="chapter-card" style="--col:#8b5cf6;--col-bg:#8b5cf618">
-      <div class="card-top">
-        <span class="card-badge">6장</span>
-        <span class="card-days-badge">Day 29–30</span>
-      </div>
-      <div class="card-title">테스트 도구 &amp; 최종 복습</div>
-      <div class="card-subtitle">테스트 자동화 도구의 종류와 리스크, 그리고 전 범위 최종 정리입니다</div>
-      <div class="card-topics">
-        <span class="topic-chip">도구 유형</span>
-        <span class="topic-chip">자동화 효과</span>
-        <span class="topic-chip">자동화 리스크</span>
-        <span class="topic-chip">최종 정리</span>
-      </div>
-      <div class="card-bottom">
-        <div class="card-progress-wrap">
-          <div class="card-progress-label" id="ch6-label">0 / 2일 완료</div>
-          <div class="card-progress-bar-wrap"><div class="card-progress-bar" id="ch6-bar" style="width:0%"></div></div>
-        </div>
-        <span class="card-arrow">›</span>
-      </div>
-    </a>
-
-  </div>
-
-  <div class="section-title">✏️ 실력 확인</div>
-  <div class="quiz-section">
-    <a href="quiz.html?day=1" class="quiz-banner">
-      <div>
-        <div class="quiz-banner-label">QUIZ</div>
-        <div class="quiz-banner-title">오늘의 퀴즈 풀기</div>
-        <div class="quiz-banner-desc">Day별 퀴즈 + 이전 내용 복습</div>
-      </div>
-      <div class="quiz-banner-icon">📝</div>
-    </a>
-  </div>
-
 </div>
+
 <script>
   const CHAPTER_DAYS = {
-    ch1:[1,2,3,4,5,6,7], ch2:[8,9,10,11,12,13,14],
-    ch3:[15,16,17], ch4:[18,19,20,21,22],
-    ch5:[23,24,25,26,27,28], ch6:[29,30],
+    ch1:[1,2,3,4,5,6,7], ch2:[8,9,10,11,12,13,14], ch3:[15,16,17],
+    ch4:[18,19,20,21,22], ch5:[23,24,25,26,27,28], ch6:[29,30],
   };
   const progress = JSON.parse(localStorage.getItem('istqb_progress') || '{}');
   const dotsEl = document.getElementById('progressDots');
